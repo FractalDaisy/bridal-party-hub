@@ -1,0 +1,16 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
+
+body {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  background-color: #fcf9f9;
+  color: #2d2627;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.font-serif-heading {
+  font-family: 'Cormorant Garamond', Georgia, serif;
+}

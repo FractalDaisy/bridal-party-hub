@@ -1,0 +1,2606 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Adrianna & Thomas — Whimsical Bridal Party Hub</title>
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            powder: {
+              50: '#f4f8fc',
+              100: '#e5f1f9',
+              200: '#cfe3f4',
+              300: '#a7ceeb',
+              400: '#75b1dd',
+              500: '#4f94cc',
+              600: '#3978af',
+              700: '#2f608d',
+              800: '#2a5175',
+              900: '#264461',
+            },
+            celestial: {
+              50: '#fdfbf7',
+              100: '#f9f4e8',
+              200: '#f2e7cd',
+              300: '#e8d4a6',
+              400: '#dab975',
+              500: '#c59d4c',
+            }
+          },
+          fontFamily: {
+            serif: ['"Cormorant Garamond"', 'Playfair Display', 'Georgia', 'serif'],
+            sans: ['"Plus Jakarta Sans"', 'system-ui', 'sans-serif'],
+            whimsical: ['"Great Vibes"', 'cursive']
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- React 18, ReactDOM & Babel -->
+  <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,600&family=Great+Vibes&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap');
+    
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      background: radial-gradient(ellipse at top, #f4f9fd 0%, #ebf4fb 50%, #e2eff8 100%);
+      color: #1e364d;
+      min-height: 100vh;
+    }
+    .font-serif-heading {
+      font-family: 'Cormorant Garamond', Georgia, serif;
+    }
+    .font-whimsical {
+      font-family: 'Great Vibes', cursive;
+    }
+  </style>
+</head>
+<body class="antialiased selection:bg-powder-200 selection:text-powder-900">
+  <div id="root"></div>
+
+  <script type="text/babel">
+    const { useState, useEffect, useRef } = React;
+
+    const DEFAULT_BRIDE = {
+      id: 'bride-adrianna',
+      name: 'Adrianna "Rain" Eskew',
+      role: 'The Bride 👰',
+      phone: '(555) 123-4567',
+      isBride: true,
+      isAdmin: true
+    };
+
+    const DEFAULT_BRIDESMAIDS = [
+      {
+        id: 'bm-payton',
+        name: 'Payton',
+        role: 'Maid of Honor 💎 (Co-Admin)',
+        phone: '(555) 789-0123',
+        dressStatus: 'Ready',
+        dressNotes: 'Show Me Your Mumu Steel Blue Stretch',
+        hotelBooked: true,
+        hotelRoommate: 'Bridal Suite',
+        hotelNights: 'Fri - Sun',
+        isBride: false,
+        isAdmin: true
+      },
+      {
+        id: 'bm-generic',
+        name: 'Jane Doe',
+        role: 'Bridesmaid',
+        phone: '(555) 000-0000',
+        dressStatus: 'Not Ordered',
+        dressNotes: 'Order deadline Dec 1st',
+        hotelBooked: false,
+        hotelRoommate: 'TBD',
+        hotelNights: 'Fri - Sun',
+        isBride: false,
+        isAdmin: false
+      }
+    ];
+
+    const DEFAULT_WEDDING = {
+      bride: 'Adrianna Eskew',
+      groom: 'Thomas Albritton',
+      dateFormatted: 'Saturday, March 6, 2027',
+      timeFormatted: 'Five Thirty in the Afternoon (5:30 PM)',
+      venueName: 'The Ceremony & Reception',
+      venueAddress: '2008 Middleground Road',
+      cityStateZip: 'Waynesboro, GA 30830',
+      photoUrl: './couple.jpg',
+      invitationUrl: './invitation.jpg',
+      quote: 'Two souls, one heartfelt beginning in the pines surrounded by family & friends.'
+    };
+
+    const DEFAULT_DRESS_REQUIREMENTS = {
+      storeName: 'Show Me Your Mumu',
+      colorName: 'Steel Blue Stretch',
+      storeUrl: 'https://showmeyourmumu.com/collections/mumu-weddings-steel-blue',
+      swatchUrl: 'https://showmeyourmumu.com/products/bridesmaid-fabric-swatch-steel-blue-stretch?variant=33108392673323',
+      hexCodes: ['#5b768e', '#7d98ae', '#9cb5c9', '#c4d5e2'],
+      fabric: 'Stretch Satin / Steel Blue Stretch (Show Me Your Mumu Collection)',
+      orderDeadline: 'December 1, 2026 (allow 8-10 weeks for delivery & alterations)',
+      shoes: 'Nude, champagne metallic, or soft blue block heels (lawn-safe for outdoor grounds)',
+      jewelryHair: 'Delicate pearl/gold accessories, loose romantic waves or half-up hair with optional black ribbon accent.'
+    };
+
+    const DEFAULT_HOTEL = {
+      name: 'Waynesboro Area Hotel & Suites Block',
+      address: 'Waynesboro / Augusta Area, Georgia',
+      rate: '$169 / night (Bridal Party Courtesy Block)',
+      cutOffDate: 'January 15, 2027',
+      groupCode: 'ESKEWALBRITTON27',
+      bookingUrl: 'https://www.google.com/travel',
+      shuttleNotes: 'Coordinated shuttle will run between the hotel block and 2008 Middleground Road before ceremony & after reception.'
+    };
+
+    const DEFAULT_TASKS = [
+      {
+        id: 't-1',
+        category: 'Attire',
+        title: 'Order Show Me Your Mumu "Steel Blue Stretch" dress',
+        assignee: 'All Bridesmaids',
+        dueDate: 'Dec 1, 2026',
+        completed: false
+      },
+      {
+        id: 't-2',
+        category: 'Hotel',
+        title: 'Reserve room under ESKEWALBRITTON27 group block',
+        assignee: 'All Bridesmaids',
+        dueDate: 'Jan 15, 2027',
+        completed: false
+      },
+      {
+        id: 't-3',
+        category: 'Shower',
+        title: 'Bridal shower coordination & games',
+        assignee: 'Maid of Honor (Payton)',
+        dueDate: 'Jan 30, 2027',
+        completed: false
+      },
+      {
+        id: 't-4',
+        category: 'Day-Of',
+        title: 'Arrive at 2008 Middleground Rd for morning hair & makeup',
+        assignee: 'All Bridesmaids',
+        dueDate: 'March 6, 2027',
+        completed: false
+      }
+    ];
+
+    const DEFAULT_POLLS = [
+      {
+        id: 'p1',
+        title: 'Wedding Morning Brunch & Refreshments 🥐☕',
+        description: 'Select what treats you would love while getting hair & makeup done at Middleground Road:',
+        isMultiSelect: true,
+        allowAddOption: true,
+        expiresAt: 'Open for Voting',
+        options: [
+          { id: 'o1', text: 'Bagels, Whipped Cream Cheese & Fresh Fruit 🥯🍓', voters: ['Jane Doe', 'Payton'] },
+          { id: 'o2', text: 'Fresh Berries & Greek Yogurt Parfait Bar 🫐🍯', voters: [] },
+          { id: 'o3', text: 'Iced Vanilla Lattes & Cold Brew Bar 🧋✨', voters: ['Jane Doe', 'Payton'] },
+          { id: 'o4', text: 'Mimosas & Sparkling Peach Bellinis 🥂🍑', voters: ['Payton'] }
+        ]
+      },
+      {
+        id: 'p2',
+        title: 'Bridal Party Manicure Preference 💅✨',
+        description: 'Vote on your favorite manicure style for wedding weekend:',
+        isMultiSelect: false,
+        allowAddOption: true,
+        expiresAt: 'Open for Voting',
+        options: [
+          { id: 'o201', text: 'Glazed Donut / Sheer Milky Chrome 🫧', voters: ['Jane Doe', 'Payton'] },
+          { id: 'o202', text: 'Soft Steel Blue Accent Nails 🩵', voters: [] },
+          { id: 'o203', text: 'Classic French Tip with Micro Sparkle 🕊️', voters: [] }
+        ]
+      }
+    ];
+
+    const DEFAULT_MESSAGES = [
+      {
+        id: 'msg-1',
+        sender: 'Adrianna "Rain" Eskew',
+        role: 'The Bride 👰',
+        text: 'Welcome to our whimsical wedding hub! 🩵✨ You can check dress requirements for our Show Me Your Mumu Steel Blue dresses, order your fabric swatch, coordinate hotel rooms, and vote in the polls!',
+        timestamp: 'Today at 10:00 AM',
+        reactions: { '❤️': 2, '🥂': 2, '✨': 3 }
+      },
+      {
+        id: 'msg-2',
+        sender: 'Payton',
+        role: 'Maid of Honor 💎 (Co-Admin)',
+        text: 'So excited for March 6th! 🌲💍 Make sure to order your Show Me Your Mumu Steel Blue swatches ($3) to match accessories!',
+        timestamp: 'Today at 10:15 AM',
+        reactions: { '❤️': 2, '✨': 2 }
+      }
+    ];
+
+    function App() {
+      const [activeTab, setActiveTab] = useState('dresses');
+      
+      // Data state
+      const [brideProfile, setBrideProfile] = useState(() => {
+        const saved = localStorage.getItem('bridal_v7_bride');
+        return saved ? JSON.parse(saved) : DEFAULT_BRIDE;
+      });
+
+      const [bridesmaids, setBridesmaids] = useState(() => {
+        const saved = localStorage.getItem('bridal_v7_bridesmaids');
+        if (saved) {
+          try {
+            const parsed = JSON.parse(saved);
+            // Ensure Payton is in the list
+            if (!parsed.some(bm => bm.name.toLowerCase().includes('payton'))) {
+              return DEFAULT_BRIDESMAIDS;
+            }
+            return parsed;
+          } catch(e) {
+            return DEFAULT_BRIDESMAIDS;
+          }
+        }
+        return DEFAULT_BRIDESMAIDS;
+      });
+
+      const [weddingDetails, setWeddingDetails] = useState(() => {
+        const saved = localStorage.getItem('bridal_v7_wedding');
+        return saved ? { ...DEFAULT_WEDDING, ...JSON.parse(saved) } : DEFAULT_WEDDING;
+      });
+
+      // Purge any legacy cache of Azazie or Birdy Grey automatically
+      const [dressReq, setDressReq] = useState(() => {
+        const saved = localStorage.getItem('bridal_v7_dress_req');
+        if (!saved) return DEFAULT_DRESS_REQUIREMENTS;
+        try {
+          const parsed = JSON.parse(saved);
+          if (!parsed.storeName || parsed.storeName.toLowerCase().includes('azazie') || parsed.storeName.toLowerCase().includes('birdy')) {
+            return DEFAULT_DRESS_REQUIREMENTS;
+          }
+          return { ...DEFAULT_DRESS_REQUIREMENTS, ...parsed };
+        } catch (e) {
+          return DEFAULT_DRESS_REQUIREMENTS;
+        }
+      });
+
+      const [hotel, setHotel] = useState(() => {
+        const saved = localStorage.getItem('bridal_v7_hotel');
+        return saved ? JSON.parse(saved) : DEFAULT_HOTEL;
+      });
+
+      const [tasks, setTasks] = useState(() => {
+        const saved = localStorage.getItem('bridal_v7_tasks');
+        return saved ? JSON.parse(saved) : DEFAULT_TASKS;
+      });
+
+      const [polls, setPolls] = useState(() => {
+        const saved = localStorage.getItem('bridal_v7_polls');
+        return saved ? JSON.parse(saved) : DEFAULT_POLLS;
+      });
+
+      const [messages, setMessages] = useState(() => {
+        const saved = localStorage.getItem('bridal_v7_messages');
+        return saved ? JSON.parse(saved) : DEFAULT_MESSAGES;
+      });
+
+      // Active User Profile: Explicitly required
+      const [currentUser, setCurrentUser] = useState(() => {
+        const saved = localStorage.getItem('bridal_v7_active_user');
+        return saved ? JSON.parse(saved) : null;
+      });
+
+      // PERMISSION: Both the Bride (Adrianna / Rain) AND Payton have full admin & editing access
+      const isAdmin = currentUser && (
+        currentUser.isBride === true ||
+        currentUser.isAdmin === true ||
+        currentUser.role?.toLowerCase().includes('bride') ||
+        currentUser.name?.toLowerCase().includes('rain') ||
+        currentUser.name?.toLowerCase().includes('adrianna') ||
+        currentUser.name?.toLowerCase().includes('payton') ||
+        currentUser.role?.toLowerCase().includes('co-admin') ||
+        currentUser.role?.toLowerCase().includes('admin')
+      );
+      const isBride = isAdmin; // Alias for complete backward compatibility
+
+      // Users "rain" and "payton" are exempt from the (edited) indicator
+      const isExemptFromEditedIndicator = (userName) => {
+        if (!userName) return false;
+        const lower = userName.toLowerCase();
+        return lower.includes('rain') || lower.includes('payton') || lower.includes('adrianna');
+      };
+
+      // Modals
+      const [showProfileModal, setShowProfileModal] = useState(false);
+      const [profilePromptReason, setProfilePromptReason] = useState('');
+      const [showNewMemberForm, setShowNewMemberForm] = useState(false);
+      const [newMemberName, setNewMemberName] = useState('');
+      const [newMemberRole, setNewMemberRole] = useState('Bridesmaid');
+      const [newMemberPhone, setNewMemberPhone] = useState('');
+
+      const [showBridesmaidModal, setShowBridesmaidModal] = useState(null);
+      const [showEditWeddingModal, setShowEditWeddingModal] = useState(false);
+      const [showEditDressModal, setShowEditDressModal] = useState(false);
+      const [showEditHotelModal, setShowEditHotelModal] = useState(false);
+      const [showNewPollModal, setShowNewPollModal] = useState(false);
+      const [showEditPollModal, setShowEditPollModal] = useState(null);
+      const [showNewTaskModal, setShowNewTaskModal] = useState(false);
+      const [showEditTaskModal, setShowEditTaskModal] = useState(null);
+      const [showPhotoModal, setShowPhotoModal] = useState(false);
+      const [showInvitationModal, setShowInvitationModal] = useState(false);
+
+      const [copiedCode, setCopiedCode] = useState(false);
+      const [chatInput, setChatInput] = useState('');
+      const [editingMessageId, setEditingMessageId] = useState(null);
+      const [editingMessageText, setEditingMessageText] = useState('');
+      const [pinnedNote, setPinnedNote] = useState(() => {
+        return localStorage.getItem('bridal_v7_pinned_note') || '📌 Whimsical Reminder: Order Show Me Your Mumu Steel Blue dresses before Dec 1st & book hotel suites!';
+      });
+      const [isEditingPinned, setIsEditingPinned] = useState(false);
+      const [newPollOptionInputs, setNewPollOptionInputs] = useState({});
+
+      const chatEndRef = useRef(null);
+
+      // Persistence
+      useEffect(() => {
+        localStorage.setItem('bridal_v7_bride', JSON.stringify(brideProfile));
+      }, [brideProfile]);
+
+      useEffect(() => {
+        localStorage.setItem('bridal_v7_bridesmaids', JSON.stringify(bridesmaids));
+      }, [bridesmaids]);
+
+      useEffect(() => {
+        localStorage.setItem('bridal_v7_wedding', JSON.stringify(weddingDetails));
+      }, [weddingDetails]);
+
+      useEffect(() => {
+        localStorage.setItem('bridal_v7_dress_req', JSON.stringify(dressReq));
+      }, [dressReq]);
+
+      useEffect(() => {
+        localStorage.setItem('bridal_v7_hotel', JSON.stringify(hotel));
+      }, [hotel]);
+
+      useEffect(() => {
+        localStorage.setItem('bridal_v7_tasks', JSON.stringify(tasks));
+      }, [tasks]);
+
+      useEffect(() => {
+        localStorage.setItem('bridal_v7_polls', JSON.stringify(polls));
+      }, [polls]);
+
+      useEffect(() => {
+        localStorage.setItem('bridal_v7_messages', JSON.stringify(messages));
+      }, [messages]);
+
+      useEffect(() => {
+        localStorage.setItem('bridal_v7_pinned_note', pinnedNote);
+      }, [pinnedNote]);
+
+      useEffect(() => {
+        if (currentUser) {
+          localStorage.setItem('bridal_v7_active_user', JSON.stringify(currentUser));
+        } else {
+          localStorage.removeItem('bridal_v7_active_user');
+        }
+      }, [currentUser]);
+
+      // Scroll chat
+      useEffect(() => {
+        if (activeTab === 'chat' && chatEndRef.current) {
+          chatEndRef.current.scrollIntoView({ behavior: 'smooth' });
+        }
+      }, [messages, activeTab]);
+
+      const allProfiles = [
+        { id: brideProfile.id, name: brideProfile.name, role: brideProfile.role, isBride: true, isAdmin: true },
+        ...bridesmaids.map(bm => ({ 
+          id: bm.id, 
+          name: bm.name, 
+          role: bm.role, 
+          isBride: false, 
+          isAdmin: bm.isAdmin || bm.name.toLowerCase().includes('payton') || bm.name.toLowerCase().includes('rain')
+        }))
+      ];
+
+      const requireUser = (reasonText = 'Please identify who you are in order to continue:') => {
+        if (!currentUser) {
+          setProfilePromptReason(reasonText);
+          setShowProfileModal(true);
+          return false;
+        }
+        return true;
+      };
+
+      const handleSelectProfile = (profile) => {
+        setCurrentUser(profile);
+        setShowProfileModal(false);
+        setProfilePromptReason('');
+      };
+
+      const handleCreateNewMemberProfile = (e) => {
+        e.preventDefault();
+        if (!newMemberName.trim()) return;
+        const isPaytonOrRain = newMemberName.trim().toLowerCase().includes('payton') || newMemberName.trim().toLowerCase().includes('rain');
+        const newBm = {
+          id: 'bm-' + Date.now(),
+          name: newMemberName.trim(),
+          role: newMemberRole.trim() || (isPaytonOrRain ? 'Co-Admin' : 'Bridesmaid'),
+          phone: newMemberPhone.trim() || '(555) 000-0000',
+          dressStatus: 'Not Ordered',
+          dressNotes: '',
+          hotelBooked: false,
+          hotelRoommate: 'TBD',
+          hotelNights: 'Fri - Sun',
+          isBride: false,
+          isAdmin: isPaytonOrRain
+        };
+        const updated = [...bridesmaids, newBm];
+        setBridesmaids(updated);
+        setCurrentUser({ id: newBm.id, name: newBm.name, role: newBm.role, isBride: false, isAdmin: isPaytonOrRain });
+        setNewMemberName('');
+        setNewMemberRole('Bridesmaid');
+        setNewMemberPhone('');
+        setShowNewMemberForm(false);
+        setShowProfileModal(false);
+      };
+
+      // Voting Logic
+      const handleVote = (pollId, optionId) => {
+        if (!requireUser('✨ Please tell us who you are before voting in the poll!')) {
+          return;
+        }
+
+        const voterName = currentUser.name;
+
+        setPolls(prevPolls => prevPolls.map(poll => {
+          if (poll.id !== pollId) return poll;
+
+          if (poll.isMultiSelect) {
+            const updatedOptions = poll.options.map(opt => {
+              if (opt.id === optionId) {
+                const alreadyVoted = opt.voters.includes(voterName);
+                const nextVoters = alreadyVoted
+                  ? opt.voters.filter(v => v !== voterName)
+                  : [...opt.voters, voterName];
+                return { ...opt, voters: nextVoters };
+              }
+              return opt;
+            });
+            return { ...poll, options: updatedOptions };
+          } else {
+            const wasSelected = poll.options.find(o => o.id === optionId)?.voters.includes(voterName);
+            const updatedOptions = poll.options.map(opt => {
+              const cleanedVoters = opt.voters.filter(v => v !== voterName);
+              if (opt.id === optionId && !wasSelected) {
+                return { ...opt, voters: [...cleanedVoters, voterName] };
+              }
+              return { ...opt, voters: cleanedVoters };
+            });
+            return { ...poll, options: updatedOptions };
+          }
+        }));
+      };
+
+      const handleAddPollOption = (pollId) => {
+        if (!requireUser('✨ Please select your profile to suggest a poll option!')) {
+          return;
+        }
+        const text = (newPollOptionInputs[pollId] || '').trim();
+        if (!text) return;
+
+        setPolls(prevPolls => prevPolls.map(poll => {
+          if (poll.id !== pollId) return poll;
+          const newOpt = {
+            id: 'opt-' + Date.now(),
+            text: text,
+            voters: [currentUser.name]
+          };
+          return {
+            ...poll,
+            options: [...poll.options, newOpt]
+          };
+        }));
+
+        setNewPollOptionInputs(prev => ({ ...prev, [pollId]: '' }));
+      };
+
+      const handleDeletePoll = (pollId) => {
+        if (!isAdmin) return;
+        if (confirm('Delete this poll?')) {
+          setPolls(prev => prev.filter(p => p.id !== pollId));
+        }
+      };
+
+      // Chat
+      const handleSendMessage = (e) => {
+        e.preventDefault();
+        if (!chatInput.trim()) return;
+
+        if (!requireUser('✨ Please select your profile to send a chat message:')) {
+          return;
+        }
+
+        const newMsg = {
+          id: 'msg-' + Date.now(),
+          sender: currentUser.name,
+          role: currentUser.role,
+          text: chatInput.trim(),
+          timestamp: 'Just now',
+          reactions: {}
+        };
+
+        setMessages(prev => [...prev, newMsg]);
+        setChatInput('');
+      };
+
+      const handleAddReaction = (msgId, emoji) => {
+        if (!requireUser('✨ Select your profile to react to messages!')) {
+          return;
+        }
+        setMessages(prev => prev.map(m => {
+          if (m.id !== msgId) return m;
+          const currentCount = m.reactions?.[emoji] || 0;
+          return {
+            ...m,
+            reactions: {
+              ...m.reactions,
+              [emoji]: currentCount + 1
+            }
+          };
+        }));
+      };
+
+      const handleDeleteMessage = (msgId) => {
+        if (!isAdmin) return;
+        if (confirm('Delete this message?')) {
+          setMessages(prev => prev.filter(m => m.id !== msgId));
+        }
+      };
+
+      // Message Editing (Available to message sender & admins; indicates edited except for Rain and Payton)
+      const handleStartEditMessage = (msg) => {
+        if (!requireUser('✨ Please select your profile to edit messages:')) return;
+        setEditingMessageId(msg.id);
+        setEditingMessageText(msg.text);
+      };
+
+      const handleCancelEditMessage = () => {
+        setEditingMessageId(null);
+        setEditingMessageText('');
+      };
+
+      const handleSaveEditMessage = (msgId) => {
+        if (!editingMessageText.trim()) return;
+
+        const currentUserName = currentUser?.name || '';
+        const isExempt = isExemptFromEditedIndicator(currentUserName);
+
+        setMessages(prev => prev.map(m => {
+          if (m.id !== msgId) return m;
+          return {
+            ...m,
+            text: editingMessageText.trim(),
+            // Only flag as edited if NOT rain or payton!
+            isEdited: !isExempt,
+            editedBy: currentUserName,
+            editedAt: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+          };
+        }));
+
+        setEditingMessageId(null);
+        setEditingMessageText('');
+      };
+
+      const handleCopyCode = () => {
+        navigator.clipboard.writeText(hotel.groupCode || '');
+        setCopiedCode(true);
+        setTimeout(() => setCopiedCode(false), 2200);
+      };
+
+      const handleToggleTask = (taskId) => {
+        setTasks(prev => prev.map(t => t.id === taskId ? { ...t, completed: !t.completed } : t));
+      };
+
+      const handleDeleteTask = (taskId, e) => {
+        e.stopPropagation();
+        if (!isAdmin) return;
+        if (confirm('Delete this checklist task?')) {
+          setTasks(prev => prev.filter(t => t.id !== taskId));
+        }
+      };
+
+      // Photo upload (Restricted to Bride & Payton)
+      const handlePhotoUpload = (e) => {
+        if (!isAdmin) {
+          alert("Only the Bride (Adrianna) and Payton have permission to edit the wedding photo.");
+          return;
+        }
+        const file = e.target.files[0];
+        if (file) {
+          const reader = new FileReader();
+          reader.onloadend = () => {
+            setWeddingDetails(prev => ({ ...prev, photoUrl: reader.result }));
+          };
+          reader.readAsDataURL(file);
+        }
+      };
+
+      // Invitation upload (Restricted to Bride & Payton)
+      const handleInvitationUpload = (e) => {
+        if (!isAdmin) {
+          alert("Only the Bride (Adrianna) and Payton have permission to edit the invitation.");
+          return;
+        }
+        const file = e.target.files[0];
+        if (file) {
+          const reader = new FileReader();
+          reader.onloadend = () => {
+            setWeddingDetails(prev => ({ ...prev, invitationUrl: reader.result }));
+          };
+          reader.readAsDataURL(file);
+        }
+      };
+
+      return (
+        /* WIDE-SCREEN RESPONSIVE CONTAINER: Utilizes the entire screen beautifully */
+        <div className="w-full max-w-6xl mx-auto min-h-screen px-4 sm:px-6 lg:px-8 pt-4 pb-24">
+          
+          {/* Top Profile Banner & Identification Ribbon (Full Width) */}
+          <header className="mb-6 bg-white/85 backdrop-blur-md border border-powder-200/90 rounded-2xl p-3 sm:px-5 shadow-sm flex items-center justify-between">
+            <div className="flex items-center space-x-3">
+              <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-powder-400 to-powder-200 flex items-center justify-center text-lg shadow-xs text-white flex-shrink-0">
+                {currentUser ? (currentUser.isBride ? '👰' : currentUser.name?.toLowerCase().includes('payton') ? '💎' : '🩵') : '✨'}
+              </div>
+              <div>
+                <div className="text-[11px] font-semibold tracking-wider uppercase text-powder-600 flex items-center gap-1.5">
+                  <span>Profile</span>
+                  <span className="w-2 h-2 rounded-full bg-emerald-400 inline-block"></span>
+                </div>
+                <div className="text-sm sm:text-base font-bold text-powder-900 leading-tight">
+                  {currentUser ? currentUser.name : (
+                    <span className="text-amber-700 italic font-medium">Select Who You Are</span>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2">
+              {isAdmin && (
+                <span className="hidden sm:inline-block text-xs font-bold text-powder-800 bg-powder-100 px-3 py-1 rounded-full border border-powder-200">
+                  {currentUser?.name?.toLowerCase().includes('payton') ? 'Payton Admin Mode 💎' : 'Bride Admin Mode 👑'}
+                </span>
+              )}
+              <button
+                onClick={() => {
+                  setProfilePromptReason('Switch between bridal party profiles:');
+                  setShowProfileModal(true);
+                }}
+                className="px-3.5 py-1.5 bg-powder-100 hover:bg-powder-200 text-powder-800 text-xs sm:text-sm font-semibold rounded-xl border border-powder-300 transition-all shadow-xs flex items-center gap-1"
+              >
+                <span>{currentUser ? 'Switch Profile' : 'Sign In'}</span>
+                <span className="text-xs">▾</span>
+              </button>
+            </div>
+          </header>
+
+          {/* =========================================================================
+              PANORAMIC WHIMSICAL HERO: PHOTO IN UPPER LEFT + EXPANSIVE WEDDING SUITE
+             ========================================================================= */}
+          <div className="relative mb-6 bg-white/90 backdrop-blur-md rounded-3xl border border-powder-200/90 shadow-md p-5 sm:p-7 lg:p-8 overflow-hidden">
+            <div className="absolute top-0 right-0 -mr-10 -mt-10 w-60 h-60 bg-powder-100/60 rounded-full blur-3xl pointer-events-none"></div>
+            <div className="absolute bottom-0 left-0 -ml-10 -mb-10 w-60 h-60 bg-celestial-100/70 rounded-full blur-3xl pointer-events-none"></div>
+
+            {/* Top Ribbon */}
+            <div className="flex items-center justify-between mb-4 border-b border-powder-100/80 pb-3">
+              <div className="flex items-center gap-2 text-powder-700">
+                <span className="text-base">🎀</span>
+                <span className="font-whimsical text-2xl sm:text-3xl text-powder-800 leading-none">Forever & Always</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="text-xs sm:text-sm px-3.5 py-1 rounded-full bg-powder-100 border border-powder-200 text-powder-800 font-semibold shadow-2xs">
+                  💍 {weddingDetails.dateFormatted}
+                </span>
+              </div>
+            </div>
+
+            {/* Responsive Hero Layout: Photo on Left, Wide Typography & Details on Right */}
+            <div className="flex flex-col md:flex-row items-center md:items-start gap-6 lg:gap-8">
+              
+              {/* UPPER LEFT HAND CORNER PHOTO */}
+              <div className="relative flex-shrink-0">
+                <div className="w-36 h-48 sm:w-44 sm:h-56 lg:w-48 lg:h-64 rounded-3xl p-1.5 bg-gradient-to-b from-powder-200 via-white to-powder-300 shadow-md">
+                  <div className="w-full h-full rounded-[18px] overflow-hidden bg-powder-50 relative group">
+                    <img 
+                      src={weddingDetails.photoUrl} 
+                      alt="Adrianna & Thomas" 
+                      className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-500 cursor-pointer"
+                      onClick={() => setShowPhotoModal(true)}
+                      onError={(e) => {
+                        e.target.onerror = null;
+                        e.target.src = "file:///C:/Users/payto/.gemini/antigravity/brain/43b1b336-fecd-4044-b979-53ca0b0668bf/.user_uploaded/media_1793224429903_9e0e916c.jpg";
+                      }}
+                    />
+                    
+                    <div className="absolute inset-0 bg-gradient-to-t from-powder-950/40 via-transparent to-transparent pointer-events-none"></div>
+
+                    {/* Black bow badge */}
+                    <div className="absolute top-2 left-2 bg-black/40 backdrop-blur-xs px-1.5 py-0.5 rounded-md text-xs text-white flex items-center gap-1 shadow-xs">
+                      <span>🎀</span>
+                    </div>
+
+                    {isAdmin && (
+                      <button 
+                        onClick={() => setShowPhotoModal(true)}
+                        className="absolute bottom-2 right-2 bg-white/95 text-powder-900 rounded-xl p-1.5 text-xs shadow-md hover:bg-white transition-transform hover:scale-105 font-medium flex items-center gap-1"
+                        title="Change Couple Photo (Bride & Payton Only)"
+                      >
+                        ✏️ Edit
+                      </button>
+                    )}
+                  </div>
+                </div>
+
+                <button
+                  onClick={() => setShowPhotoModal(true)}
+                  className="mt-2 w-full text-center text-xs text-powder-700 hover:text-powder-900 font-semibold"
+                >
+                  View Full Photo 🔍
+                </button>
+              </div>
+
+              {/* RIGHT SIDE OF PHOTO: Romantic Whimsical Typography */}
+              <div className="flex-1 text-center md:text-left">
+                <div className="text-xs sm:text-sm font-serif-heading italic text-powder-600 tracking-wider uppercase">
+                  You're Cordially Invited to Celebrate
+                </div>
+
+                <h1 className="font-serif-heading italic text-3xl sm:text-5xl lg:text-6xl text-powder-950 leading-tight my-1 sm:my-2">
+                  {weddingDetails.bride} & {weddingDetails.groom}
+                </h1>
+
+                {/* Wedding Logistics Banner */}
+                <div className="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs sm:text-sm text-powder-900">
+                  <div className="p-3 bg-powder-50/80 rounded-2xl border border-powder-200">
+                    <div className="font-serif-heading font-bold text-powder-950 flex items-center gap-1.5">
+                      <span>📅</span>
+                      <span>{weddingDetails.dateFormatted}</span>
+                    </div>
+                    <div className="text-powder-700 font-serif-heading italic mt-0.5">
+                      {weddingDetails.timeFormatted}
+                    </div>
+                  </div>
+
+                  <div className="p-3 bg-powder-50/80 rounded-2xl border border-powder-200">
+                    <div className="font-semibold text-powder-950 flex items-center gap-1.5">
+                      <span>📍</span>
+                      <span>{weddingDetails.venueAddress}</span>
+                    </div>
+                    <div className="text-powder-700 text-xs mt-0.5">
+                      {weddingDetails.cityStateZip} (Reception to Follow)
+                    </div>
+                  </div>
+                </div>
+
+                <p className="mt-3.5 text-xs sm:text-sm text-powder-800 font-serif-heading italic leading-relaxed">
+                  "{weddingDetails.quote}"
+                </p>
+
+                {/* Action Bar: View Invitation Card + Edit Wedding Info (Bride & Payton) + Swatch */}
+                <div className="mt-4 pt-3.5 border-t border-powder-100 flex flex-wrap items-center justify-between gap-3">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <button
+                      onClick={() => setShowInvitationModal(true)}
+                      className="px-4 py-2 bg-gradient-to-r from-powder-500 to-powder-600 hover:from-powder-600 hover:to-powder-700 text-white text-xs sm:text-sm font-semibold rounded-xl shadow-xs transition-all flex items-center gap-1.5"
+                    >
+                      <span>📜 View Official Wedding Invitation</span>
+                      <span>↗</span>
+                    </button>
+
+                    {isAdmin && (
+                      <button
+                        onClick={() => setShowEditWeddingModal(true)}
+                        className="px-3.5 py-2 bg-white hover:bg-powder-50 text-powder-800 text-xs sm:text-sm font-semibold rounded-xl border border-powder-300 shadow-xs transition-all flex items-center gap-1.5"
+                      >
+                        <span>✏️ Edit Wedding Info</span>
+                      </button>
+                    )}
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs font-semibold text-powder-800">Mumu Steel Blue Palette:</span>
+                    <div className="flex -space-x-1.5">
+                      {dressReq.hexCodes.map((hex, i) => (
+                        <span 
+                          key={i} 
+                          className="w-5 h-5 rounded-full border-2 border-white shadow-2xs" 
+                          style={{ backgroundColor: hex }}
+                          title={hex}
+                        ></span>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* =========================================================================
+              RESPONSIVE NAVIGATION TABS (Wide & Spacious)
+             ========================================================================= */}
+          <nav className="mb-6 max-w-3xl mx-auto bg-white/90 backdrop-blur-md p-2 rounded-2xl border border-powder-200/90 shadow-xs grid grid-cols-5 text-center gap-2">
+            <button
+              onClick={() => setActiveTab('dresses')}
+              className={`py-2.5 px-2 text-xs sm:text-sm font-semibold rounded-xl transition-all ${
+                activeTab === 'dresses'
+                  ? 'bg-gradient-to-r from-powder-500 to-powder-600 text-white shadow-sm'
+                  : 'text-powder-700 hover:bg-powder-100'
+              }`}
+            >
+              <div className="text-lg">👗</div>
+              <div className="mt-0.5">Dresses</div>
+            </button>
+
+            <button
+              onClick={() => setActiveTab('hotel')}
+              className={`py-2.5 px-2 text-xs sm:text-sm font-semibold rounded-xl transition-all ${
+                activeTab === 'hotel'
+                  ? 'bg-gradient-to-r from-powder-500 to-powder-600 text-white shadow-sm'
+                  : 'text-powder-700 hover:bg-powder-100'
+              }`}
+            >
+              <div className="text-lg">🏨</div>
+              <div className="mt-0.5">Hotel</div>
+            </button>
+
+            <button
+              onClick={() => setActiveTab('polls')}
+              className={`py-2.5 px-2 text-xs sm:text-sm font-semibold rounded-xl transition-all relative ${
+                activeTab === 'polls'
+                  ? 'bg-gradient-to-r from-powder-500 to-powder-600 text-white shadow-sm'
+                  : 'text-powder-700 hover:bg-powder-100'
+              }`}
+            >
+              <div className="text-lg">📊</div>
+              <div className="mt-0.5">Polls</div>
+              <span className="absolute top-2 right-4 w-2 h-2 bg-powder-400 rounded-full animate-pulse"></span>
+            </button>
+
+            <button
+              onClick={() => setActiveTab('chat')}
+              className={`py-2.5 px-2 text-xs sm:text-sm font-semibold rounded-xl transition-all ${
+                activeTab === 'chat'
+                  ? 'bg-gradient-to-r from-powder-500 to-powder-600 text-white shadow-sm'
+                  : 'text-powder-700 hover:bg-powder-100'
+              }`}
+            >
+              <div className="text-lg">💬</div>
+              <div className="mt-0.5">Chat</div>
+            </button>
+
+            <button
+              onClick={() => setActiveTab('party')}
+              className={`py-2.5 px-2 text-xs sm:text-sm font-semibold rounded-xl transition-all ${
+                activeTab === 'party'
+                  ? 'bg-gradient-to-r from-powder-500 to-powder-600 text-white shadow-sm'
+                  : 'text-powder-700 hover:bg-powder-100'
+              }`}
+            >
+              <div className="text-lg">💐</div>
+              <div className="mt-0.5">Party</div>
+            </button>
+          </nav>
+
+          {/* =========================================================================
+              TAB 1: DRESSES (EXPANSIVE 2-COLUMN DESKTOP LAYOUT)
+             ========================================================================= */}
+          {activeTab === 'dresses' && (
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+              
+              {/* Left Column (5 cols): Show Me Your Mumu Swatch Spotlight & Personal Status */}
+              <div className="lg:col-span-5 space-y-6">
+                
+                {/* Official Fabric Swatch Spotlight Card */}
+                <div className="relative overflow-hidden p-5 sm:p-6 rounded-3xl bg-gradient-to-br from-powder-100 via-white to-powder-50 border-2 border-powder-300 shadow-sm">
+                  <div className="flex items-start justify-between gap-4">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-1.5 text-xs text-powder-700 font-bold uppercase tracking-wider">
+                        <span>✨ Official Fabric Swatch</span>
+                      </div>
+                      <div className="text-xl font-bold font-serif-heading text-powder-900 mt-1">
+                        {dressReq.storeName}
+                      </div>
+                      <div className="text-xs sm:text-sm font-semibold text-powder-800 mt-0.5">
+                        Color: <strong className="text-powder-950 font-bold">{dressReq.colorName}</strong>
+                      </div>
+                    </div>
+
+                    {/* Large Satin Swatch Texture */}
+                    <div 
+                      className="w-20 h-20 rounded-2xl shadow-md border-2 border-white flex flex-col justify-between p-2 relative overflow-hidden flex-shrink-0"
+                      style={{ background: 'linear-gradient(135deg, #5b768e 0%, #7d98ae 45%, #9cb5c9 70%, #68859e 100%)' }}
+                    >
+                      <div className="w-full h-full rounded-xl flex items-center justify-center">
+                        <span className="text-[10px] font-bold uppercase tracking-wider text-white/95 drop-shadow-xs bg-black/30 px-1.5 py-0.5 rounded">
+                          MUMU
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <p className="mt-3 text-xs sm:text-sm text-powder-800 leading-relaxed">
+                    Order this official fabric swatch ($3) to easily color-match your shoes, accessories, and bridal party details!
+                  </p>
+
+                  <div className="mt-4 grid grid-cols-2 gap-3">
+                    <a
+                      href={dressReq.swatchUrl}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="py-2.5 px-3 bg-powder-600 hover:bg-powder-700 text-white text-xs sm:text-sm font-semibold rounded-xl text-center shadow-xs flex items-center justify-center gap-1.5 transition-all"
+                    >
+                      <span>Order Swatch ($3) ↗</span>
+                    </a>
+                    <a
+                      href={dressReq.storeUrl}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="py-2.5 px-3 bg-white hover:bg-powder-50 text-powder-800 border border-powder-300 text-xs sm:text-sm font-semibold rounded-xl text-center shadow-xs flex items-center justify-center gap-1.5 transition-all"
+                    >
+                      <span>Shop Mumu Dresses ↗</span>
+                    </a>
+                  </div>
+                </div>
+
+                {/* Personal Status Card */}
+                <div className="bg-white/90 backdrop-blur-md rounded-3xl border border-powder-200 p-5 shadow-sm">
+                  <div className="flex items-center justify-between mb-3">
+                    <h3 className="text-base font-bold text-powder-900 flex items-center gap-1.5">
+                      <span>Your Dress Status</span>
+                      <span>🪞</span>
+                    </h3>
+                    {currentUser && (
+                      <button
+                        onClick={() => {
+                          const member = bridesmaids.find(b => b.name === currentUser.name) || brideProfile;
+                          setShowBridesmaidModal(member);
+                        }}
+                        className="text-xs font-semibold text-powder-600 hover:underline"
+                      >
+                        Update My Details ✏️
+                      </button>
+                    )}
+                  </div>
+
+                  {currentUser ? (
+                    currentUser.isBride ? (
+                      <p className="text-xs sm:text-sm text-powder-700 bg-powder-50 p-3 rounded-2xl border border-powder-200">
+                        👰 You are logged in as the Bride (Adrianna). You and Payton can manage all bridesmaid dress orders and sizes under the <strong>Party</strong> tab!
+                      </p>
+                    ) : (
+                      (() => {
+                        const member = bridesmaids.find(b => b.name === currentUser.name);
+                        return member ? (
+                          <div className="bg-powder-50 p-3.5 rounded-2xl border border-powder-200 flex items-center justify-between">
+                            <div>
+                              <div className="text-sm font-bold text-powder-900">{member.name}</div>
+                              <div className="text-xs text-powder-600 mt-0.5">Order Status: <strong className="text-powder-900">{member.dressStatus}</strong></div>
+                            </div>
+                            <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
+                              member.dressStatus === 'Ready' ? 'bg-emerald-100 text-emerald-800' :
+                              member.dressStatus === 'Ordered' ? 'bg-sky-100 text-sky-800' :
+                              member.dressStatus === 'In Alterations' ? 'bg-indigo-100 text-indigo-800' :
+                              'bg-amber-100 text-amber-800'
+                            }`}>
+                              {member.dressStatus}
+                            </span>
+                          </div>
+                        ) : (
+                          <p className="text-xs text-powder-600">Profile logged in as {currentUser.name}.</p>
+                        );
+                      })()
+                    )
+                  ) : (
+                    <button
+                      onClick={() => requireUser('Select your profile to track your dress:')}
+                      className="w-full py-2.5 bg-powder-100 hover:bg-powder-200 text-powder-800 text-xs sm:text-sm font-semibold rounded-xl border border-powder-300"
+                    >
+                      ✨ Choose Profile to Track Your Dress
+                    </button>
+                  )}
+                </div>
+              </div>
+
+              {/* Right Column (7 cols): Live Bridal Party Dress Order Status Tracker */}
+              <div className="lg:col-span-7">
+                <div className="bg-white/90 backdrop-blur-md rounded-3xl border border-powder-200/90 shadow-sm p-6 sm:p-7 space-y-4">
+                  <div className="flex items-center justify-between pb-3 border-b border-powder-100">
+                    <div>
+                      <h2 className="text-xl font-bold font-serif-heading text-powder-900 flex items-center gap-2">
+                        <span>👗 Bridal Party Dress Order Status</span>
+                        <span className="text-sm">✨</span>
+                      </h2>
+                      <p className="text-xs sm:text-sm text-powder-600 mt-0.5">Live order tracking for Show Me Your Mumu Steel Blue dresses</p>
+                    </div>
+
+                    <div className="text-right">
+                      <span className="text-xs text-rose-700 font-semibold block">
+                        ⏳ Deadline: {dressReq.orderDeadline}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Order Status Cards for Each Bridesmaid */}
+                  <div className="space-y-3">
+                    {bridesmaids.map((bm) => (
+                      <div 
+                        key={bm.id} 
+                        className="p-4 rounded-2xl bg-powder-50/80 border border-powder-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3"
+                      >
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 rounded-full bg-powder-200 flex items-center justify-center text-sm font-bold text-powder-800 flex-shrink-0">
+                            {bm.name[0]}
+                          </div>
+                          <div>
+                            <div className="text-sm sm:text-base font-bold text-powder-900 flex items-center gap-1.5">
+                              <span>{bm.name}</span>
+                              {bm.isAdmin && <span className="text-xs">💎</span>}
+                            </div>
+                            <div className="text-xs text-powder-600">{bm.role}</div>
+                          </div>
+                        </div>
+
+                        <div className="flex items-center gap-2 self-end sm:self-center">
+                          {isAdmin ? (
+                            <select
+                              value={bm.dressStatus}
+                              onChange={(e) => {
+                                const newStatus = e.target.value;
+                                setBridesmaids(prev => prev.map(b => b.id === bm.id ? { ...b, dressStatus: newStatus } : b));
+                              }}
+                              className={`text-xs font-semibold px-3 py-1.5 rounded-xl border transition-all cursor-pointer ${
+                                bm.dressStatus === 'Ready' ? 'bg-emerald-100 border-emerald-300 text-emerald-800' :
+                                bm.dressStatus === 'Ordered' ? 'bg-sky-100 border-sky-300 text-sky-800' :
+                                bm.dressStatus === 'In Alterations' ? 'bg-indigo-100 border-indigo-300 text-indigo-800' :
+                                'bg-amber-100 border-amber-300 text-amber-800'
+                              }`}
+                            >
+                              <option value="Not Ordered">Not Ordered</option>
+                              <option value="Ordered">Ordered</option>
+                              <option value="In Alterations">In Alterations</option>
+                              <option value="Ready">Ready to Wear! ✨</option>
+                            </select>
+                          ) : (
+                            <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
+                              bm.dressStatus === 'Ready' ? 'bg-emerald-100 text-emerald-800' :
+                              bm.dressStatus === 'Ordered' ? 'bg-sky-100 text-sky-800' :
+                              bm.dressStatus === 'In Alterations' ? 'bg-indigo-100 text-indigo-800' :
+                              'bg-amber-100 text-amber-800'
+                            }`}>
+                              {bm.dressStatus}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+
+                  <p className="text-[11px] text-powder-500 italic pt-1">
+                    * Order statuses can be updated directly above by the Bride & Payton, or by each bridesmaid when viewing their profile.
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* =========================================================================
+              TAB 2: HOTEL (EXPANSIVE 2-COLUMN DESKTOP LAYOUT)
+             ========================================================================= */}
+          {activeTab === 'hotel' && (
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <div className="bg-white/90 backdrop-blur-md rounded-3xl border border-powder-200/90 shadow-sm p-6 sm:p-7">
+                <div className="flex items-center justify-between mb-4">
+                  <div>
+                    <h2 className="text-xl font-bold font-serif-heading text-powder-900 flex items-center gap-2">
+                      <span>🏨 Hotel Room Block</span>
+                      <span className="text-sm">✨</span>
+                    </h2>
+                    <p className="text-xs sm:text-sm text-powder-600 mt-0.5">Guest & bridal party accommodations</p>
+                  </div>
+
+                  {isAdmin && (
+                    <button
+                      onClick={() => setShowEditHotelModal(true)}
+                      className="px-3 py-1.5 text-xs sm:text-sm font-semibold text-powder-700 bg-powder-100 hover:bg-powder-200 border border-powder-300 rounded-xl transition-all"
+                    >
+                      Edit Details ✏️
+                    </button>
+                  )}
+                </div>
+
+                <div className="p-4 sm:p-5 rounded-2xl bg-gradient-to-br from-powder-50 to-white border border-powder-200 mb-4 space-y-2">
+                  <div className="text-lg font-bold text-powder-900">{hotel.name}</div>
+                  <div className="text-xs sm:text-sm text-powder-700 flex items-center gap-1.5">
+                    <span>📍</span>
+                    <span>{hotel.address}</span>
+                  </div>
+                  <div className="text-xs sm:text-sm text-powder-800 font-semibold">
+                    Nightly Rate: <span className="text-powder-600 font-bold">{hotel.rate}</span>
+                  </div>
+                  <div className="text-xs sm:text-sm text-rose-700 font-semibold">
+                    Cut-off Date: {hotel.cutOffDate}
+                  </div>
+                </div>
+
+                <div className="p-4 rounded-2xl bg-powder-100/70 border border-powder-300 flex items-center justify-between">
+                  <div>
+                    <span className="text-[10px] sm:text-xs text-powder-700 uppercase font-semibold block">Discount Group Code</span>
+                    <span className="text-base sm:text-lg font-mono font-bold text-powder-900 tracking-wider">{hotel.groupCode}</span>
+                  </div>
+                  <button
+                    onClick={handleCopyCode}
+                    className="px-3.5 py-2 bg-white hover:bg-powder-50 text-powder-800 text-xs sm:text-sm font-semibold rounded-xl border border-powder-300 shadow-xs transition-all flex items-center gap-1"
+                  >
+                    <span>{copiedCode ? 'Copied! ✓' : 'Copy Code'}</span>
+                  </button>
+                </div>
+              </div>
+
+              <div className="bg-white/90 backdrop-blur-md rounded-3xl border border-powder-200/90 shadow-sm p-6 sm:p-7 space-y-4">
+                <h3 className="text-lg font-bold font-serif-heading text-powder-900">
+                  🚌 Shuttle & Travel Logistics
+                </h3>
+                <div className="p-4 rounded-2xl bg-powder-50 border border-powder-200 text-xs sm:text-sm text-powder-800 leading-relaxed">
+                  <span className="font-bold text-powder-900 block mb-1">Ceremony Shuttle:</span>
+                  {hotel.shuttleNotes}
+                </div>
+                <div className="p-4 rounded-2xl bg-powder-50 border border-powder-200 text-xs sm:text-sm text-powder-800 leading-relaxed">
+                  <span className="font-bold text-powder-900 block mb-1">Venue Destination:</span>
+                  {weddingDetails.venueAddress}, {weddingDetails.cityStateZip}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* =========================================================================
+              TAB 3: POLLS (SPACIOUS 2-COLUMN DESKTOP GRID)
+             ========================================================================= */}
+          {activeTab === 'polls' && (
+            <div className="space-y-6">
+              {/* Poll Top Header Status Bar */}
+              <div className="bg-white/90 backdrop-blur-md rounded-2xl border border-powder-200 p-4 shadow-xs flex items-center justify-between">
+                <div>
+                  <span className="text-powder-600 block text-[10px] sm:text-xs font-semibold uppercase">Voting Identity</span>
+                  <div className="font-bold text-powder-900 text-sm sm:text-base flex items-center gap-1.5">
+                    {currentUser ? (
+                      <>
+                        <span>{currentUser.isBride ? '👰' : currentUser.name?.toLowerCase().includes('payton') ? '💎' : '🩵'}</span>
+                        <span>{currentUser.name}</span>
+                        <span className="text-xs font-normal text-powder-600">({currentUser.role})</span>
+                      </>
+                    ) : (
+                      <span className="text-amber-800 italic">⚠️ Not selected — click to choose</span>
+                    )}
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => {
+                      setProfilePromptReason('Select which bridal party member is voting:');
+                      setShowProfileModal(true);
+                    }}
+                    className="px-3 py-1.5 text-xs sm:text-sm bg-powder-100 hover:bg-powder-200 text-powder-800 font-semibold rounded-xl border border-powder-300"
+                  >
+                    Change ▾
+                  </button>
+                  <button
+                    onClick={() => {
+                      if (requireUser('Select your profile to create a new poll:')) {
+                        setShowNewPollModal(true);
+                      }
+                    }}
+                    className="px-3.5 py-1.5 text-xs sm:text-sm bg-powder-500 hover:bg-powder-600 text-white font-semibold rounded-xl shadow-xs"
+                  >
+                    + New Poll
+                  </button>
+                </div>
+              </div>
+
+              {/* Responsive Grid of Polls (Side-by-side on desktop) */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                {polls.map((poll) => {
+                  const totalVotes = poll.options.reduce((sum, opt) => sum + opt.voters.length, 0);
+                  const maxVotes = Math.max(0, ...poll.options.map(opt => opt.voters.length));
+
+                  return (
+                    <div key={poll.id} className="bg-white/90 backdrop-blur-md rounded-3xl border border-powder-200/90 shadow-sm p-5 sm:p-6 space-y-4">
+                      <div>
+                        <div className="flex items-center justify-between gap-2 flex-wrap">
+                          <span className="text-[10px] sm:text-xs font-semibold uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-powder-100 text-powder-700 border border-powder-200">
+                            {poll.isMultiSelect ? 'Multi-Choice' : 'Single-Choice'}
+                          </span>
+                          <div className="flex items-center gap-2">
+                            <span className="text-xs text-powder-500 font-medium">
+                              {poll.expiresAt}
+                            </span>
+                            {isAdmin && (
+                              <div className="flex items-center gap-1.5">
+                                <button
+                                  type="button"
+                                  onClick={() => setShowEditPollModal(poll)}
+                                  className="px-2.5 py-1 text-xs bg-powder-100 hover:bg-powder-200 text-powder-800 rounded-xl border border-powder-300 font-semibold transition-all flex items-center gap-1 shadow-2xs cursor-pointer"
+                                  title="Edit Poll (Bride & Payton Only)"
+                                >
+                                  <span>✏️ Edit</span>
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => setPolls(prev => prev.filter(p => p.id !== poll.id))}
+                                  className="px-2.5 py-1 text-xs bg-rose-50 hover:bg-rose-100 text-rose-700 rounded-xl border border-rose-200 font-semibold transition-all flex items-center gap-1 shadow-2xs cursor-pointer"
+                                  title="Delete Poll (Bride & Payton Only)"
+                                >
+                                  <span>🗑️ Delete</span>
+                                </button>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                        <h3 className="text-lg font-bold text-powder-900 mt-1.5 font-serif-heading">
+                          {poll.title}
+                        </h3>
+                        <p className="text-xs sm:text-sm text-powder-600 mt-0.5">
+                          {poll.description}
+                        </p>
+                      </div>
+
+                      <div className="space-y-3 pt-1">
+                        {poll.options.map((opt) => {
+                          const count = opt.voters.length;
+                          const pct = totalVotes > 0 ? Math.round((count / totalVotes) * 100) : 0;
+                          const isLeading = count > 0 && count === maxVotes;
+                          const userHasVoted = currentUser && opt.voters.includes(currentUser.name);
+
+                          return (
+                            <div 
+                              key={opt.id}
+                              onClick={() => handleVote(poll.id, opt.id)}
+                              className={`relative overflow-hidden rounded-2xl border p-3.5 transition-all cursor-pointer ${
+                                userHasVoted 
+                                  ? 'border-powder-500 bg-powder-50/80 shadow-xs ring-1 ring-powder-400' 
+                                  : 'border-powder-200 hover:border-powder-300 bg-white'
+                              }`}
+                            >
+                              <div 
+                                className="absolute top-0 bottom-0 left-0 bg-powder-100/70 transition-all duration-500 pointer-events-none"
+                                style={{ width: `${pct}%` }}
+                              ></div>
+
+                              <div className="relative z-10">
+                                <div className="flex items-start justify-between gap-2">
+                                  <div className="text-xs sm:text-sm font-semibold text-powder-900 leading-snug">
+                                    {opt.text}
+                                  </div>
+                                  <div className="flex items-center gap-1.5 flex-shrink-0">
+                                    {isLeading && (
+                                      <span className="text-[10px] bg-amber-100 text-amber-800 font-semibold px-2 py-0.5 rounded-md border border-amber-200">
+                                        👑 Top Choice
+                                      </span>
+                                    )}
+                                    {userHasVoted && (
+                                      <span className="text-[10px] bg-powder-600 text-white font-semibold px-2 py-0.5 rounded-md">
+                                        ✓ Your Vote
+                                      </span>
+                                    )}
+                                  </div>
+                                </div>
+
+                                <div className="flex items-center justify-between text-xs text-powder-700 mt-2 font-medium">
+                                  <span>
+                                    <strong>{count}</strong> {count === 1 ? 'vote' : 'votes'}
+                                  </span>
+                                  <span>{pct}%</span>
+                                </div>
+
+                                {opt.voters.length > 0 && (
+                                  <div className="mt-2 pt-2 border-t border-powder-100 flex flex-wrap gap-1.5 items-center text-[11px] text-powder-600">
+                                    <span className="font-semibold text-powder-500">Voters:</span>
+                                    {opt.voters.map((v, idx) => (
+                                      <span key={idx} className="bg-white/90 px-2 py-0.5 rounded-md border border-powder-200 shadow-2xs">
+                                        {v === currentUser?.name ? 'You' : v}
+                                      </span>
+                                    ))}
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+
+                      <div className="text-right text-xs text-powder-500 pt-1">
+                        Total tallied: <strong>{totalVotes}</strong> votes
+                      </div>
+
+                      {poll.allowAddOption && (
+                        <div className="pt-2 border-t border-powder-100 flex gap-2">
+                          <input
+                            type="text"
+                            placeholder="Suggest an option..."
+                            value={newPollOptionInputs[poll.id] || ''}
+                            onChange={(e) => setNewPollOptionInputs({ ...newPollOptionInputs, [poll.id]: e.target.value })}
+                            className="flex-1 text-xs sm:text-sm px-3.5 py-2 rounded-xl border border-powder-200 bg-white focus:outline-none focus:ring-1 focus:ring-powder-400"
+                          />
+                          <button
+                            onClick={() => handleAddPollOption(poll.id)}
+                            className="px-4 py-2 bg-powder-100 hover:bg-powder-200 text-powder-800 text-xs sm:text-sm font-semibold rounded-xl border border-powder-300 transition-all"
+                          >
+                            + Add
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
+          {/* =========================================================================
+              TAB 4: CHAT BOARD (SPACIOUS WIDE FEED)
+             ========================================================================= */}
+          {activeTab === 'chat' && (
+            <div className="space-y-4 max-w-4xl mx-auto">
+              <div className="bg-celestial-50/90 border border-celestial-200 rounded-2xl p-4 shadow-xs text-xs sm:text-sm text-powder-900 flex items-start justify-between gap-3">
+                <div className="flex-1">
+                  {isEditingPinned ? (
+                    <div className="space-y-2">
+                      <input
+                        type="text"
+                        value={pinnedNote}
+                        onChange={(e) => setPinnedNote(e.target.value)}
+                        className="w-full text-xs sm:text-sm p-2 rounded-lg border border-celestial-300 bg-white"
+                      />
+                      <button
+                        onClick={() => setIsEditingPinned(false)}
+                        className="px-3 py-1 bg-celestial-300 text-powder-900 text-xs font-semibold rounded"
+                      >
+                        Save Pin ✓
+                      </button>
+                    </div>
+                  ) : (
+                    <p className="leading-snug">{pinnedNote}</p>
+                  )}
+                </div>
+                {isAdmin && !isEditingPinned && (
+                  <button
+                    onClick={() => setIsEditingPinned(true)}
+                    className="text-xs text-powder-600 hover:text-powder-900 font-semibold"
+                    title="Edit Announcement (Bride & Payton Only)"
+                  >
+                    ✏️ Edit Pin
+                  </button>
+                )}
+              </div>
+
+              <div className="bg-white/90 backdrop-blur-md rounded-3xl border border-powder-200/90 shadow-sm p-5 sm:p-6 h-[520px] overflow-y-auto space-y-4 flex flex-col">
+                {messages.map((msg) => {
+                  const isMe = currentUser && msg.sender === currentUser.name;
+                  const canEdit = currentUser && (isMe || isAdmin);
+                  const isEditing = editingMessageId === msg.id;
+
+                  // Indicate it was edited EXCEPT for users rain and payton
+                  const isExempt = isExemptFromEditedIndicator(msg.editedBy) || isExemptFromEditedIndicator(msg.sender);
+                  const showEdited = msg.isEdited && !isExempt;
+
+                  return (
+                    <div key={msg.id} className={`flex flex-col ${isMe ? 'items-end' : 'items-start'}`}>
+                      <div className="flex items-center gap-1.5 text-xs text-powder-500 mb-1 px-1">
+                        <span className="font-bold text-powder-800">{msg.sender}</span>
+                        <span>({msg.role})</span>
+                        <span>•</span>
+                        <span>{msg.timestamp}</span>
+
+                        {showEdited && (
+                          <span 
+                            className="text-[10px] bg-powder-100 text-powder-700 px-1.5 py-0.5 rounded-md font-medium border border-powder-200 shadow-2xs"
+                            title={`Edited by ${msg.editedBy || msg.sender} at ${msg.editedAt || ''}`}
+                          >
+                            ✏️ edited
+                          </span>
+                        )}
+
+                        {canEdit && !isEditing && (
+                          <button
+                            type="button"
+                            onClick={() => handleStartEditMessage(msg)}
+                            className="text-powder-400 hover:text-powder-700 ml-1 text-xs font-medium hover:underline flex items-center gap-0.5"
+                            title="Edit Message"
+                          >
+                            <span>✏️</span>
+                            <span className="hidden sm:inline text-[10px]">edit</span>
+                          </button>
+                        )}
+
+                        {isAdmin && !isEditing && (
+                          <button
+                            type="button"
+                            onClick={() => handleDeleteMessage(msg.id)}
+                            className="text-powder-400 hover:text-rose-600 ml-1 text-[11px]"
+                            title="Delete Message (Admin)"
+                          >
+                            🗑️
+                          </button>
+                        )}
+                      </div>
+
+                      {isEditing ? (
+                        <div className={`w-full max-w-lg rounded-2xl p-3.5 shadow-md ${
+                          isMe ? 'bg-powder-50 border-2 border-powder-400 rounded-tr-xs' : 'bg-white border-2 border-powder-400 rounded-tl-xs'
+                        }`}>
+                          <div className="text-[11px] font-semibold text-powder-700 mb-1.5 flex items-center justify-between">
+                            <span>✏️ Edit Message</span>
+                            {isExemptFromEditedIndicator(currentUser?.name) && (
+                              <span className="text-[10px] text-powder-500 italic bg-powder-100 px-2 py-0.5 rounded-md border border-powder-200">
+                                Discreet edit (no tag for {currentUser?.name})
+                              </span>
+                            )}
+                          </div>
+                          <textarea
+                            value={editingMessageText}
+                            onChange={(e) => setEditingMessageText(e.target.value)}
+                            className="w-full text-xs sm:text-sm p-2.5 rounded-xl border border-powder-300 bg-white text-powder-900 focus:outline-none focus:ring-2 focus:ring-powder-400 leading-relaxed resize-none"
+                            rows="3"
+                            autoFocus
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter' && !e.shiftKey) {
+                                e.preventDefault();
+                                handleSaveEditMessage(msg.id);
+                              } else if (e.key === 'Escape') {
+                                handleCancelEditMessage();
+                              }
+                            }}
+                          />
+                          <div className="flex items-center justify-between mt-2 pt-1 border-t border-powder-100 text-[11px]">
+                            <span className="text-powder-400 text-[10px]">Enter to save • Esc to cancel</span>
+                            <div className="flex items-center gap-2">
+                              <button
+                                type="button"
+                                onClick={handleCancelEditMessage}
+                                className="px-3 py-1 text-powder-600 hover:text-powder-900 rounded-lg hover:bg-powder-100 font-medium"
+                              >
+                                Cancel
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => handleSaveEditMessage(msg.id)}
+                                className="px-3.5 py-1 font-semibold text-white bg-powder-500 hover:bg-powder-600 rounded-xl shadow-xs transition-all"
+                              >
+                                Save Changes ✓
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className={`max-w-[75%] rounded-2xl px-4 py-3 text-xs sm:text-sm shadow-xs ${
+                          isMe 
+                            ? 'bg-gradient-to-r from-powder-500 to-powder-600 text-white rounded-tr-xs' 
+                            : 'bg-powder-50 border border-powder-200 text-powder-900 rounded-tl-xs'
+                        }`}>
+                          <p className="leading-relaxed whitespace-pre-wrap">{msg.text}</p>
+                          {showEdited && (
+                            <div className={`text-[10px] mt-1 text-right italic ${isMe ? 'text-powder-200' : 'text-powder-400'}`}>
+                              (edited)
+                            </div>
+                          )}
+                        </div>
+                      )}
+
+                      <div className="flex items-center gap-1 mt-1.5 px-1">
+                        {Object.entries(msg.reactions || {}).map(([emoji, count]) => (
+                          count > 0 && (
+                            <button
+                              key={emoji}
+                              onClick={() => handleAddReaction(msg.id, emoji)}
+                              className="px-2 py-0.5 rounded-full text-xs bg-white border border-powder-200 shadow-2xs flex items-center gap-1"
+                            >
+                              <span>{emoji}</span>
+                              <span className="font-semibold text-powder-700">{count}</span>
+                            </button>
+                          )
+                        ))}
+                        
+                        <div className="flex items-center gap-1 ml-1.5 opacity-60 hover:opacity-100 transition-opacity">
+                          {['❤️', '🥂', '✨'].map(emoji => (
+                            <button
+                              key={emoji}
+                              onClick={() => handleAddReaction(msg.id, emoji)}
+                              className="text-sm hover:scale-125 transition-transform"
+                            >
+                              {emoji}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+                <div ref={chatEndRef}></div>
+              </div>
+
+              <form onSubmit={handleSendMessage} className="flex gap-3">
+                <input
+                  type="text"
+                  placeholder={currentUser ? `Message as ${currentUser.name}...` : "Select profile to chat..."}
+                  value={chatInput}
+                  onChange={(e) => setChatInput(e.target.value)}
+                  className="flex-1 text-xs sm:text-sm px-4 py-3 rounded-2xl border border-powder-200 bg-white focus:outline-none focus:ring-2 focus:ring-powder-400"
+                />
+                <button
+                  type="submit"
+                  className="px-6 py-3 bg-gradient-to-r from-powder-500 to-powder-600 hover:from-powder-600 hover:to-powder-700 text-white text-xs sm:text-sm font-semibold rounded-2xl shadow-sm transition-all"
+                >
+                  Send
+                </button>
+              </form>
+            </div>
+          )}
+
+          {/* =========================================================================
+              TAB 5: BRIDAL PARTY DIRECTORY & SHARED CHECKLISTS (WIDE GRID)
+             ========================================================================= */}
+          {activeTab === 'party' && (
+            <div className="space-y-6">
+              <div className="bg-white/90 backdrop-blur-md rounded-3xl border border-powder-200/90 shadow-sm p-6 sm:p-7">
+                <div className="flex items-center justify-between mb-4">
+                  <div>
+                    <h2 className="text-xl font-bold font-serif-heading text-powder-900 flex items-center gap-2">
+                      <span>💐 Bridal Party Directory</span>
+                      <span className="text-sm">✨</span>
+                    </h2>
+                    <p className="text-xs sm:text-sm text-powder-600 mt-0.5">Roles, contacts & dress order status</p>
+                  </div>
+
+                  {isAdmin && (
+                    <button
+                      onClick={() => setShowBridesmaidModal({ isNew: true })}
+                      className="px-4 py-2 text-xs sm:text-sm font-semibold bg-powder-500 hover:bg-powder-600 text-white rounded-xl shadow-xs transition-all"
+                    >
+                      + Add Member
+                    </button>
+                  )}
+                </div>
+
+                {/* The Bride Card */}
+                <div className="p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-powder-100 to-celestial-100 border border-powder-300 mb-5 flex items-center justify-between">
+                  <div className="flex items-center gap-3.5">
+                    <div className="w-12 h-12 rounded-full bg-white flex items-center justify-center text-2xl shadow-xs">
+                      👰
+                    </div>
+                    <div>
+                      <div className="text-base font-bold text-powder-900">{brideProfile.name}</div>
+                      <div className="text-xs sm:text-sm font-medium text-powder-700">{brideProfile.role}</div>
+                      <div className="text-xs text-powder-600">{brideProfile.phone}</div>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs px-3 py-1 rounded-full bg-white text-powder-800 font-semibold border border-powder-200 shadow-2xs">
+                      Fairytale Bride ✨
+                    </span>
+                    {isAdmin && (
+                      <button
+                        onClick={() => setShowBridesmaidModal({ ...brideProfile, isBrideProfile: true })}
+                        className="px-2.5 py-1 text-xs bg-white hover:bg-powder-100 text-powder-700 rounded-xl border border-powder-300 font-semibold transition-all"
+                      >
+                        Edit ✏️
+                      </button>
+                    )}
+                  </div>
+                </div>
+
+                {/* Bridesmaids List: Responsive Multi-Column Cards */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {bridesmaids.map((bm) => (
+                    <div key={bm.id} className="p-4 rounded-2xl bg-powder-50 border border-powder-200 flex flex-col justify-between space-y-3">
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="flex items-start gap-3">
+                          <div className="w-10 h-10 rounded-full bg-powder-200 flex items-center justify-center text-base font-bold text-powder-800 flex-shrink-0">
+                            {bm.name[0]}
+                          </div>
+                          <div>
+                            <div className="text-sm sm:text-base font-bold text-powder-900 flex items-center gap-1.5">
+                              <span>{bm.name}</span>
+                              {bm.isAdmin && <span className="text-xs" title="Co-Admin">💎</span>}
+                            </div>
+                            <div className="text-xs font-semibold text-powder-700">{bm.role}</div>
+                            <div className="text-xs text-powder-600">{bm.phone}</div>
+                          </div>
+                        </div>
+
+                        {(isAdmin || currentUser?.name === bm.name) && (
+                          <button
+                            onClick={() => setShowBridesmaidModal(bm)}
+                            className="px-2.5 py-1 text-xs bg-white hover:bg-powder-100 text-powder-700 rounded-xl border border-powder-300 font-semibold transition-all"
+                          >
+                            Edit ✏️
+                          </button>
+                        )}
+                      </div>
+
+                      <div className="pt-2 border-t border-powder-200/60 flex flex-wrap gap-2 text-xs">
+                        <span className={`px-2.5 py-0.5 rounded-md font-semibold ${
+                          bm.dressStatus === 'Ready' ? 'bg-emerald-100 text-emerald-800' :
+                          bm.dressStatus === 'Ordered' ? 'bg-sky-100 text-sky-800' :
+                          'bg-amber-100 text-amber-800'
+                        }`}>
+                          Dress: {bm.dressStatus}
+                        </span>
+                        <span className="px-2.5 py-0.5 rounded-md bg-white border border-powder-200 text-powder-700 font-medium">
+                          Room: {bm.hotelRoommate}
+                        </span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Shared Checklists */}
+              <div className="bg-white/90 backdrop-blur-md rounded-3xl border border-powder-200/90 shadow-sm p-6 sm:p-7">
+                <div className="flex items-center justify-between mb-4">
+                  <div>
+                    <h3 className="text-lg font-bold font-serif-heading text-powder-900">
+                      📋 Shared Wedding Checklists
+                    </h3>
+                    <p className="text-xs sm:text-sm text-powder-600">Track group milestones and tasks</p>
+                  </div>
+                  {isAdmin && (
+                    <button
+                      onClick={() => setShowNewTaskModal(true)}
+                      className="px-3 py-1.5 text-xs sm:text-sm font-semibold text-powder-700 bg-powder-100 hover:bg-powder-200 border border-powder-300 rounded-xl"
+                    >
+                      + Add Task
+                    </button>
+                  )}
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  {tasks.map((task) => (
+                    <div
+                      key={task.id}
+                      className={`p-3.5 rounded-2xl border transition-all flex flex-col sm:flex-row sm:items-center justify-between gap-3 ${
+                        task.completed ? 'bg-powder-50/60 border-powder-200 opacity-60' : 'bg-white border-powder-200 shadow-2xs'
+                      }`}
+                    >
+                      <div 
+                        onClick={() => handleToggleTask(task.id)}
+                        className="flex items-start sm:items-center gap-3 flex-1 cursor-pointer"
+                      >
+                        <input
+                          type="checkbox"
+                          checked={task.completed}
+                          onChange={() => {}}
+                          className="w-5 h-5 mt-0.5 sm:mt-0 rounded text-powder-600 focus:ring-powder-400 cursor-pointer"
+                        />
+                        <div>
+                          <div className={`text-xs sm:text-sm font-semibold ${task.completed ? 'line-through text-powder-400' : 'text-powder-900'}`}>
+                            {task.title}
+                          </div>
+                          <div className="text-[11px] text-powder-600 mt-0.5 flex flex-wrap items-center gap-2">
+                            <span>👤 {task.assignee}</span>
+                            <span>•</span>
+                            <span>⏳ Due: {task.dueDate}</span>
+                            <span className="text-[10px] uppercase font-semibold text-powder-700 bg-powder-100 px-2 py-0.5 rounded-full border border-powder-200">
+                              {task.category}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Actions: Edit & Delete (Bride & Payton) */}
+                      <div className="flex items-center gap-1.5 self-end sm:self-center">
+                        {isAdmin ? (
+                          <>
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setShowEditTaskModal(task);
+                              }}
+                              className="px-2.5 py-1 text-xs bg-powder-100 hover:bg-powder-200 text-powder-800 rounded-xl border border-powder-300 font-semibold transition-all flex items-center gap-1 shadow-2xs cursor-pointer"
+                              title="Edit Task"
+                            >
+                              <span>✏️ Edit</span>
+                            </button>
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setTasks(prev => prev.filter(t => t.id !== task.id));
+                              }}
+                              className="px-2.5 py-1 text-xs bg-rose-50 hover:bg-rose-100 text-rose-700 rounded-xl border border-rose-200 font-semibold transition-all flex items-center gap-1 shadow-2xs cursor-pointer"
+                              title="Delete Task"
+                            >
+                              <span>🗑️ Delete</span>
+                            </button>
+                          </>
+                        ) : (
+                          <button
+                            type="button"
+                            onClick={() => requireUser('Please select Bride or Payton to edit or delete checklist tasks:')}
+                            className="text-[11px] text-powder-500 hover:text-powder-800"
+                          >
+                            Sign in to edit
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* =========================================================================
+              MODAL 1: VIEW OFFICIAL INVITATION (EDITABLE BY BRIDE & PAYTON)
+             ========================================================================= */}
+          {showInvitationModal && (
+            <div className="fixed inset-0 z-50 bg-powder-950/40 backdrop-blur-sm flex items-center justify-center p-4">
+              <div className="bg-white rounded-3xl max-w-md w-full p-5 shadow-2xl border border-powder-200 space-y-4 animate-in fade-in zoom-in-95 duration-200 max-h-[90vh] overflow-y-auto">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-lg font-bold font-serif-heading text-powder-900">
+                    Official Wedding Invitation 📜
+                  </h3>
+                  <button onClick={() => setShowInvitationModal(false)} className="text-powder-400 hover:text-powder-700 text-base">✕</button>
+                </div>
+
+                <div className="w-full rounded-2xl overflow-hidden border border-powder-200 shadow-inner bg-powder-50">
+                  <img src={weddingDetails.invitationUrl} alt="Wedding Invitation" className="w-full h-auto object-contain" />
+                </div>
+
+                <div className="text-center text-xs sm:text-sm text-powder-800 space-y-0.5">
+                  <div className="font-bold text-base text-powder-900">{weddingDetails.bride} & {weddingDetails.groom}</div>
+                  <div>{weddingDetails.dateFormatted} • {weddingDetails.timeFormatted}</div>
+                  <div className="text-xs text-powder-600">{weddingDetails.venueAddress}, {weddingDetails.cityStateZip}</div>
+                </div>
+
+                {isAdmin && (
+                  <div className="p-3 bg-powder-50 rounded-2xl border border-powder-200 text-xs space-y-2">
+                    <span className="font-semibold text-powder-900 block">Replace Invitation Card (Bride & Payton Only):</span>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={handleInvitationUpload}
+                      className="text-xs text-powder-700 file:mr-2 file:py-1 file:px-3 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-powder-200 file:text-powder-800 hover:file:bg-powder-300"
+                    />
+                  </div>
+                )}
+
+                <button
+                  onClick={() => setShowInvitationModal(false)}
+                  className="w-full py-2.5 bg-powder-500 text-white text-xs sm:text-sm font-semibold rounded-2xl shadow-xs"
+                >
+                  Close Invitation
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* =========================================================================
+              MODAL 2: COUPLE PHOTO (EDITABLE BY BRIDE & PAYTON)
+             ========================================================================= */}
+          {showPhotoModal && (
+            <div className="fixed inset-0 z-50 bg-powder-950/40 backdrop-blur-sm flex items-center justify-center p-4">
+              <div className="bg-white rounded-3xl max-w-md w-full p-5 shadow-2xl border border-powder-200 space-y-4 animate-in fade-in zoom-in-95 duration-200 max-h-[90vh] overflow-y-auto">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-lg font-bold font-serif-heading text-powder-900">
+                    Couple Keepsake Photo 🌲🎀
+                  </h3>
+                  <button onClick={() => setShowPhotoModal(false)} className="text-powder-400 hover:text-powder-700 text-base">✕</button>
+                </div>
+
+                <div className="w-full h-72 rounded-2xl overflow-hidden border border-powder-200 bg-powder-50">
+                  <img src={weddingDetails.photoUrl} alt="Wedding Portrait" className="w-full h-full object-cover" />
+                </div>
+
+                <p className="text-xs sm:text-sm text-powder-700 italic text-center font-serif-heading">
+                  "{weddingDetails.bride} & {weddingDetails.groom} in the pines with her signature black hair bow."
+                </p>
+
+                {isAdmin ? (
+                  <div className="p-3 bg-powder-50 rounded-2xl border border-powder-200 text-xs sm:text-sm space-y-2">
+                    <span className="font-semibold text-powder-900 block">Change / Upload New Photo (Bride & Payton Only):</span>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={handlePhotoUpload}
+                      className="text-xs text-powder-700 file:mr-2 file:py-1 file:px-3 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-powder-200 file:text-powder-800 hover:file:bg-powder-300"
+                    />
+                  </div>
+                ) : (
+                  <div className="p-3 bg-powder-50 rounded-xl border border-powder-200 text-xs text-powder-600 text-center">
+                    🔒 Photo editing is reserved for the Bride (Adrianna) and Payton.
+                  </div>
+                )}
+
+                <button
+                  onClick={() => setShowPhotoModal(false)}
+                  className="w-full py-2.5 bg-powder-500 text-white text-xs sm:text-sm font-semibold rounded-2xl shadow-xs"
+                >
+                  Done
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* =========================================================================
+              MODAL: EDIT WEDDING DETAILS (EDITABLE BY BRIDE & PAYTON)
+             ========================================================================= */}
+          {showEditWeddingModal && isAdmin && (
+            <div className="fixed inset-0 z-50 bg-powder-950/40 backdrop-blur-sm flex items-center justify-center p-4">
+              <div className="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-powder-200 space-y-3.5 animate-in fade-in zoom-in-95 duration-200 max-h-[90vh] overflow-y-auto">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-lg font-bold font-serif-heading text-powder-900">
+                    Edit Wedding Details (Bride & Payton)
+                  </h3>
+                  <button onClick={() => setShowEditWeddingModal(false)} className="text-powder-400 hover:text-powder-700 text-base">✕</button>
+                </div>
+
+                <form onSubmit={(e) => {
+                  e.preventDefault();
+                  const form = e.target;
+                  setWeddingDetails({
+                    ...weddingDetails,
+                    bride: form.bride.value.trim(),
+                    groom: form.groom.value.trim(),
+                    dateFormatted: form.dateFormatted.value.trim(),
+                    timeFormatted: form.timeFormatted.value.trim(),
+                    venueAddress: form.venueAddress.value.trim(),
+                    cityStateZip: form.cityStateZip.value.trim(),
+                    quote: form.quote.value.trim()
+                  });
+                  setShowEditWeddingModal(false);
+                }} className="space-y-3 text-xs sm:text-sm">
+                  <div className="grid grid-cols-2 gap-2">
+                    <div>
+                      <label className="text-[10px] uppercase font-semibold text-powder-700">Bride Name</label>
+                      <input name="bride" defaultValue={weddingDetails.bride} required className="w-full px-3 py-2 rounded-xl border border-powder-200 bg-white" />
+                    </div>
+                    <div>
+                      <label className="text-[10px] uppercase font-semibold text-powder-700">Groom Name</label>
+                      <input name="groom" defaultValue={weddingDetails.groom} required className="w-full px-3 py-2 rounded-xl border border-powder-200 bg-white" />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="text-[10px] uppercase font-semibold text-powder-700">Wedding Date</label>
+                    <input name="dateFormatted" defaultValue={weddingDetails.dateFormatted} required className="w-full px-3 py-2 rounded-xl border border-powder-200 bg-white" />
+                  </div>
+
+                  <div>
+                    <label className="text-[10px] uppercase font-semibold text-powder-700">Wedding Time</label>
+                    <input name="timeFormatted" defaultValue={weddingDetails.timeFormatted} required className="w-full px-3 py-2 rounded-xl border border-powder-200 bg-white" />
+                  </div>
+
+                  <div>
+                    <label className="text-[10px] uppercase font-semibold text-powder-700">Venue Address</label>
+                    <input name="venueAddress" defaultValue={weddingDetails.venueAddress} required className="w-full px-3 py-2 rounded-xl border border-powder-200 bg-white" />
+                  </div>
+
+                  <div>
+                    <label className="text-[10px] uppercase font-semibold text-powder-700">City, State & Zip</label>
+                    <input name="cityStateZip" defaultValue={weddingDetails.cityStateZip} required className="w-full px-3 py-2 rounded-xl border border-powder-200 bg-white" />
+                  </div>
+
+                  <div>
+                    <label className="text-[10px] uppercase font-semibold text-powder-700">Couple Quote</label>
+                    <textarea name="quote" defaultValue={weddingDetails.quote} rows="2" className="w-full px-3 py-2 rounded-xl border border-powder-200 bg-white" />
+                  </div>
+
+                  <button
+                    type="submit"
+                    className="w-full py-2.5 bg-powder-500 hover:bg-powder-600 text-white font-semibold rounded-2xl shadow-xs"
+                  >
+                    Save Wedding Info
+                  </button>
+                </form>
+              </div>
+            </div>
+          )}
+
+          {/* =========================================================================
+              MODAL 3: WHO IS VIEWING / PROFILE SELECTION
+             ========================================================================= */}
+          {showProfileModal && (
+            <div className="fixed inset-0 z-50 bg-powder-950/40 backdrop-blur-sm flex items-center justify-center p-4">
+              <div className="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-powder-200 space-y-4 animate-in fade-in zoom-in-95 duration-200 max-h-[90vh] overflow-y-auto">
+                <div className="text-center">
+                  <div className="w-14 h-14 mx-auto rounded-full bg-powder-100 border border-powder-200 flex items-center justify-center text-3xl shadow-inner mb-2">
+                    🪞
+                  </div>
+                  <h3 className="text-xl font-bold font-serif-heading text-powder-900">
+                    Who is viewing? ✨
+                  </h3>
+                  <p className="text-xs sm:text-sm text-powder-600 mt-1">
+                    {profilePromptReason || 'Select your bridal party profile to personalize your votes, dress tracking, and chat:'}
+                  </p>
+                </div>
+
+                <div className="space-y-2.5 max-h-64 overflow-y-auto pr-1">
+                  {allProfiles.map((p) => {
+                    const isSelected = currentUser?.id === p.id;
+                    return (
+                      <div
+                        key={p.id}
+                        onClick={() => handleSelectProfile(p)}
+                        className={`p-3.5 rounded-2xl border flex items-center justify-between cursor-pointer transition-all ${
+                          isSelected 
+                            ? 'bg-powder-100 border-powder-400 ring-2 ring-powder-300' 
+                            : 'bg-white hover:bg-powder-50 border-powder-200'
+                        }`}
+                      >
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 rounded-full bg-powder-200 flex items-center justify-center text-base font-bold text-powder-800">
+                            {p.isBride ? '👰' : p.name.toLowerCase().includes('payton') ? '💎' : '🩵'}
+                          </div>
+                          <div>
+                            <div className="text-sm font-bold text-powder-900 flex items-center gap-1.5">
+                              <span>{p.name}</span>
+                              {p.isAdmin && <span className="text-[10px] bg-powder-200 text-powder-800 px-1.5 py-0.5 rounded font-semibold">Admin</span>}
+                            </div>
+                            <div className="text-xs text-powder-600">{p.role}</div>
+                          </div>
+                        </div>
+                        {isSelected && (
+                          <span className="text-xs font-bold text-powder-600">✓ Active</span>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+
+                {!showNewMemberForm ? (
+                  <button
+                    onClick={() => setShowNewMemberForm(true)}
+                    className="w-full py-2.5 bg-powder-50 hover:bg-powder-100 text-powder-700 text-xs sm:text-sm font-semibold rounded-2xl border border-dashed border-powder-300 transition-all flex items-center justify-center gap-1.5"
+                  >
+                    <span>+ I am a new Bridesmaid</span>
+                  </button>
+                ) : (
+                  <form onSubmit={handleCreateNewMemberProfile} className="p-3.5 rounded-2xl bg-powder-50 border border-powder-200 space-y-2.5 text-xs sm:text-sm">
+                    <div className="font-semibold text-powder-900">Add yourself to the party:</div>
+                    <input
+                      type="text"
+                      placeholder="Your First & Last Name"
+                      value={newMemberName}
+                      onChange={(e) => setNewMemberName(e.target.value)}
+                      className="w-full px-3.5 py-2 rounded-xl border border-powder-200 bg-white"
+                      required
+                    />
+                    <div className="grid grid-cols-2 gap-2">
+                      <input
+                        type="text"
+                        placeholder="Role (e.g. Bridesmaid)"
+                        value={newMemberRole}
+                        onChange={(e) => setNewMemberRole(e.target.value)}
+                        className="w-full px-3 py-2 rounded-xl border border-powder-200 bg-white"
+                      />
+                      <input
+                        type="text"
+                        placeholder="Phone (optional)"
+                        value={newMemberPhone}
+                        onChange={(e) => setNewMemberPhone(e.target.value)}
+                        className="w-full px-3 py-2 rounded-xl border border-powder-200 bg-white"
+                      />
+                    </div>
+                    <div className="flex gap-2 pt-1">
+                      <button
+                        type="submit"
+                        className="flex-1 py-2 bg-powder-500 text-white rounded-xl font-semibold"
+                      >
+                        Join & Select Profile
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setShowNewMemberForm(false)}
+                        className="px-3 py-2 bg-white text-powder-700 rounded-xl border border-powder-200"
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  </form>
+                )}
+
+                <div className="flex items-center justify-between pt-1">
+                  <button
+                    onClick={() => setShowProfileModal(false)}
+                    className="text-xs text-powder-500 hover:underline mx-auto"
+                  >
+                    Close & Keep Current
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* =========================================================================
+              MODAL 4: EDIT BRIDESMAID / MEMBER (EDITABLE BY BRIDE & PAYTON)
+             ========================================================================= */}
+          {showBridesmaidModal && (
+            <div className="fixed inset-0 z-50 bg-powder-950/40 backdrop-blur-sm flex items-center justify-center p-4">
+              <div className="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-powder-200 space-y-3.5 animate-in fade-in zoom-in-95 duration-200 max-h-[90vh] overflow-y-auto">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-lg font-bold font-serif-heading text-powder-900">
+                    {showBridesmaidModal.isNew ? 'Add Bridesmaid' : `Edit ${showBridesmaidModal.name}`}
+                  </h3>
+                  <button onClick={() => setShowBridesmaidModal(null)} className="text-powder-400 hover:text-powder-700 text-base">✕</button>
+                </div>
+
+                <form onSubmit={(e) => {
+                  e.preventDefault();
+                  const form = e.target;
+                  if (showBridesmaidModal.isNew) {
+                    const isPaytonName = form.name.value.trim().toLowerCase().includes('payton');
+                    const newBm = {
+                      id: 'bm-' + Date.now(),
+                      name: form.name.value.trim(),
+                      role: form.role.value.trim(),
+                      phone: form.phone.value.trim(),
+                      dressStatus: form.dressStatus.value,
+                      dressNotes: form.dressNotes.value.trim(),
+                      hotelRoommate: form.hotelRoommate.value.trim(),
+                      hotelNights: 'Fri - Sun',
+                      hotelBooked: false,
+                      isBride: false,
+                      isAdmin: isPaytonName
+                    };
+                    setBridesmaids([...bridesmaids, newBm]);
+                  } else if (showBridesmaidModal.isBrideProfile) {
+                    setBrideProfile({
+                      ...brideProfile,
+                      name: form.name.value.trim(),
+                      role: form.role.value.trim(),
+                      phone: form.phone.value.trim()
+                    });
+                  } else {
+                    setBridesmaids(bridesmaids.map(b => b.id === showBridesmaidModal.id ? {
+                      ...b,
+                      ...(isAdmin && {
+                        name: form.name.value.trim(),
+                        role: form.role.value.trim(),
+                        phone: form.phone.value.trim(),
+                        isAdmin: form.name.value.trim().toLowerCase().includes('payton') || b.isAdmin
+                      }),
+                      dressStatus: form.dressStatus.value,
+                      dressNotes: form.dressNotes.value.trim(),
+                      hotelRoommate: form.hotelRoommate.value.trim()
+                    } : b));
+                  }
+                  setShowBridesmaidModal(null);
+                }} className="space-y-3 text-xs sm:text-sm">
+                  
+                  {isAdmin ? (
+                    <>
+                      <div>
+                        <label className="text-[10px] uppercase font-semibold text-powder-700">Full Name</label>
+                        <input name="name" defaultValue={showBridesmaidModal.name || ''} required className="w-full px-3 py-2 rounded-xl border border-powder-200 bg-white" />
+                      </div>
+                      <div className="grid grid-cols-2 gap-2">
+                        <div>
+                          <label className="text-[10px] uppercase font-semibold text-powder-700">Role</label>
+                          <input name="role" defaultValue={showBridesmaidModal.role || 'Bridesmaid'} className="w-full px-3 py-2 rounded-xl border border-powder-200 bg-white" />
+                        </div>
+                        <div>
+                          <label className="text-[10px] uppercase font-semibold text-powder-700">Phone</label>
+                          <input name="phone" defaultValue={showBridesmaidModal.phone || ''} className="w-full px-3 py-2 rounded-xl border border-powder-200 bg-white" />
+                        </div>
+                      </div>
+                    </>
+                  ) : (
+                    <div className="bg-powder-50 p-3 rounded-xl border border-powder-200">
+                      <div className="font-bold text-powder-900">{showBridesmaidModal.name}</div>
+                      <div className="text-xs text-powder-600">{showBridesmaidModal.role}</div>
+                    </div>
+                  )}
+
+                  {!showBridesmaidModal.isBrideProfile && (
+                    <>
+                      <div>
+                        <label className="text-[10px] uppercase font-semibold text-powder-700">Show Me Your Mumu Dress Order Status</label>
+                        <select name="dressStatus" defaultValue={showBridesmaidModal.dressStatus || 'Not Ordered'} className="w-full px-3 py-2 rounded-xl border border-powder-200 bg-white">
+                          <option value="Not Ordered">Not Ordered (Deadline Dec 1st)</option>
+                          <option value="Ordered">Ordered (Waiting on delivery)</option>
+                          <option value="In Alterations">In Alterations</option>
+                          <option value="Ready">Ready to Wear! ✨</option>
+                        </select>
+                      </div>
+
+                      <div>
+                        <label className="text-[10px] uppercase font-semibold text-powder-700">Hotel Roommate Preference</label>
+                        <input name="hotelRoommate" defaultValue={showBridesmaidModal.hotelRoommate || 'TBD'} className="w-full px-3 py-2 rounded-xl border border-powder-200 bg-white" />
+                      </div>
+                    </>
+                  )}
+
+                  <div className="flex gap-2 pt-2">
+                    <button
+                      type="submit"
+                      className="flex-1 py-2.5 bg-powder-500 hover:bg-powder-600 text-white font-semibold rounded-2xl shadow-xs"
+                    >
+                      Save Changes
+                    </button>
+                    {isAdmin && !showBridesmaidModal.isNew && !showBridesmaidModal.isBrideProfile && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          if (confirm(`Remove ${showBridesmaidModal.name} from directory?`)) {
+                            setBridesmaids(bridesmaids.filter(b => b.id !== showBridesmaidModal.id));
+                            setShowBridesmaidModal(null);
+                          }
+                        }}
+                        className="px-3.5 py-2.5 bg-rose-50 text-rose-600 hover:bg-rose-100 rounded-2xl border border-rose-200 text-xs font-semibold"
+                      >
+                        Delete
+                      </button>
+                    )}
+                  </div>
+                </form>
+              </div>
+            </div>
+          )}
+
+          {/* =========================================================================
+              MODAL 5: EDIT DRESS REQUIREMENTS (EDITABLE BY BRIDE & PAYTON)
+             ========================================================================= */}
+          {showEditDressModal && isAdmin && (
+            <div className="fixed inset-0 z-50 bg-powder-950/40 backdrop-blur-sm flex items-center justify-center p-4">
+              <div className="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-powder-200 space-y-3.5 animate-in fade-in zoom-in-95 duration-200 max-h-[90vh] overflow-y-auto">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-lg font-bold font-serif-heading text-powder-900">
+                    Edit Dress Guidelines (Bride & Payton)
+                  </h3>
+                  <button onClick={() => setShowEditDressModal(false)} className="text-powder-400 hover:text-powder-700 text-base">✕</button>
+                </div>
+
+                <form onSubmit={(e) => {
+                  e.preventDefault();
+                  const form = e.target;
+                  setDressReq({
+                    ...dressReq,
+                    storeName: form.storeName.value,
+                    colorName: form.colorName.value,
+                    orderDeadline: form.orderDeadline.value,
+                    swatchUrl: form.swatchUrl.value,
+                    storeUrl: form.storeUrl.value
+                  });
+                  setShowEditDressModal(false);
+                }} className="space-y-3 text-xs sm:text-sm">
+                  <div className="grid grid-cols-2 gap-2">
+                    <div>
+                      <label className="text-[10px] uppercase font-semibold text-powder-700">Store Name</label>
+                      <input name="storeName" defaultValue={dressReq.storeName} className="w-full px-3 py-2 rounded-xl border border-powder-200 bg-white" />
+                    </div>
+                    <div>
+                      <label className="text-[10px] uppercase font-semibold text-powder-700">Color Name</label>
+                      <input name="colorName" defaultValue={dressReq.colorName} className="w-full px-3 py-2 rounded-xl border border-powder-200 bg-white" />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="text-[10px] uppercase font-semibold text-powder-700">Order Deadline</label>
+                    <input name="orderDeadline" defaultValue={dressReq.orderDeadline} className="w-full px-3 py-2 rounded-xl border border-powder-200 bg-white" />
+                  </div>
+                  <div>
+                    <label className="text-[10px] uppercase font-semibold text-powder-700">Swatch Purchase Link</label>
+                    <input name="swatchUrl" defaultValue={dressReq.swatchUrl} className="w-full px-3 py-2 rounded-xl border border-powder-200 bg-white" />
+                  </div>
+                  <div>
+                    <label className="text-[10px] uppercase font-semibold text-powder-700">Store Collection Link</label>
+                    <input name="storeUrl" defaultValue={dressReq.storeUrl} className="w-full px-3 py-2 rounded-xl border border-powder-200 bg-white" />
+                  </div>
+
+                  <button
+                    type="submit"
+                    className="w-full py-2.5 bg-powder-500 hover:bg-powder-600 text-white font-semibold rounded-2xl shadow-xs"
+                  >
+                    Save Guidelines
+                  </button>
+                </form>
+              </div>
+            </div>
+          )}
+
+          {/* =========================================================================
+              MODAL 6: EDIT HOTEL INFO (EDITABLE BY BRIDE & PAYTON)
+             ========================================================================= */}
+          {showEditHotelModal && isAdmin && (
+            <div className="fixed inset-0 z-50 bg-powder-950/40 backdrop-blur-sm flex items-center justify-center p-4">
+              <div className="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-powder-200 space-y-3.5 animate-in fade-in zoom-in-95 duration-200 max-h-[90vh] overflow-y-auto">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-lg font-bold font-serif-heading text-powder-900">
+                    Edit Hotel Block (Bride & Payton)
+                  </h3>
+                  <button onClick={() => setShowEditHotelModal(false)} className="text-powder-400 hover:text-powder-700 text-base">✕</button>
+                </div>
+
+                <form onSubmit={(e) => {
+                  e.preventDefault();
+                  const form = e.target;
+                  setHotel({
+                    name: form.name.value,
+                    address: form.address.value,
+                    groupCode: form.groupCode.value,
+                    cutOffDate: form.cutOffDate.value,
+                    rate: form.rate.value,
+                    bookingUrl: form.bookingUrl.value,
+                    shuttleNotes: form.shuttleNotes.value
+                  });
+                  setShowEditHotelModal(false);
+                }} className="space-y-3 text-xs sm:text-sm">
+                  <div>
+                    <label className="text-[10px] uppercase font-semibold text-powder-700">Hotel Name</label>
+                    <input name="name" defaultValue={hotel.name} className="w-full px-3 py-2 rounded-xl border border-powder-200 bg-white" />
+                  </div>
+                  <div>
+                    <label className="text-[10px] uppercase font-semibold text-powder-700">Address</label>
+                    <input name="address" defaultValue={hotel.address} className="w-full px-3 py-2 rounded-xl border border-powder-200 bg-white" />
+                  </div>
+                  <div className="grid grid-cols-2 gap-2">
+                    <div>
+                      <label className="text-[10px] uppercase font-semibold text-powder-700">Group Code</label>
+                      <input name="groupCode" defaultValue={hotel.groupCode} className="w-full px-3 py-2 rounded-xl border border-powder-200 bg-white" />
+                    </div>
+                    <div>
+                      <label className="text-[10px] uppercase font-semibold text-powder-700">Nightly Rate</label>
+                      <input name="rate" defaultValue={hotel.rate} className="w-full px-3 py-2 rounded-xl border border-powder-200 bg-white" />
+                    </div>
+                  </div>
+                  <div>
+                    <label className="text-[10px] uppercase font-semibold text-powder-700">Cut-Off Deadline Date</label>
+                    <input name="cutOffDate" defaultValue={hotel.cutOffDate} className="w-full px-3 py-2 rounded-xl border border-powder-200 bg-white" />
+                  </div>
+                  <div>
+                    <label className="text-[10px] uppercase font-semibold text-powder-700">Shuttle & Transportation Notes</label>
+                    <textarea name="shuttleNotes" defaultValue={hotel.shuttleNotes} rows="2" className="w-full px-3 py-2 rounded-xl border border-powder-200 bg-white" />
+                  </div>
+                  <div>
+                    <label className="text-[10px] uppercase font-semibold text-powder-700">Direct Booking URL</label>
+                    <input name="bookingUrl" defaultValue={hotel.bookingUrl} className="w-full px-3 py-2 rounded-xl border border-powder-200 bg-white" />
+                  </div>
+
+                  <button
+                    type="submit"
+                    className="w-full py-2.5 bg-powder-500 hover:bg-powder-600 text-white font-semibold rounded-2xl shadow-xs"
+                  >
+                    Save Hotel Info
+                  </button>
+                </form>
+              </div>
+            </div>
+          )}
+
+          {/* =========================================================================
+              MODAL 7: CREATE NEW POLL
+             ========================================================================= */}
+          {showNewPollModal && (
+            <div className="fixed inset-0 z-50 bg-powder-950/40 backdrop-blur-sm flex items-center justify-center p-4">
+              <div className="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-powder-200 space-y-3.5 animate-in fade-in zoom-in-95 duration-200">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-lg font-bold font-serif-heading text-powder-900">
+                    Create Bridal Poll 📊
+                  </h3>
+                  <button onClick={() => setShowNewPollModal(false)} className="text-powder-400 hover:text-powder-700 text-base">✕</button>
+                </div>
+
+                <form onSubmit={(e) => {
+                  e.preventDefault();
+                  const form = e.target;
+                  const rawOptions = form.options.value.split('\n').filter(o => o.trim());
+                  const newPoll = {
+                    id: 'p-' + Date.now(),
+                    title: form.title.value.trim(),
+                    description: form.description.value.trim(),
+                    isMultiSelect: form.isMultiSelect.checked,
+                    allowAddOption: true,
+                    expiresAt: 'Open for Voting',
+                    options: rawOptions.map((text, idx) => ({
+                      id: 'opt-' + Date.now() + '-' + idx,
+                      text: text.trim(),
+                      voters: []
+                    }))
+                  };
+                  setPolls([...polls, newPoll]);
+                  setShowNewPollModal(false);
+                }} className="space-y-3 text-xs sm:text-sm">
+                  <div>
+                    <label className="text-[10px] uppercase font-semibold text-powder-700">Poll Question / Title</label>
+                    <input name="title" required placeholder="e.g. Bridesmaid Bouquets Style 💐" className="w-full px-3 py-2 rounded-xl border border-powder-200 bg-white" />
+                  </div>
+
+                  <div>
+                    <label className="text-[10px] uppercase font-semibold text-powder-700">Short Note / Description</label>
+                    <input name="description" placeholder="Brief explanation..." className="w-full px-3 py-2 rounded-xl border border-powder-200 bg-white" />
+                  </div>
+
+                  <div>
+                    <label className="text-[10px] uppercase font-semibold text-powder-700">Options (one per line)</label>
+                    <textarea
+                      name="options"
+                      required
+                      rows="3"
+                      placeholder="Option 1&#10;Option 2&#10;Option 3"
+                      className="w-full px-3 py-2 rounded-xl border border-powder-200 bg-white"
+                    />
+                  </div>
+
+                  <div className="flex items-center gap-2 pt-1">
+                    <input type="checkbox" name="isMultiSelect" id="multiSelect" className="w-4 h-4 rounded text-powder-600 focus:ring-powder-400" />
+                    <label htmlFor="multiSelect" className="text-xs text-powder-800 font-medium">Allow bridesmaids to select multiple options</label>
+                  </div>
+
+                  <button
+                    type="submit"
+                    className="w-full py-2.5 bg-powder-500 hover:bg-powder-600 text-white font-semibold rounded-2xl shadow-xs mt-2"
+                  >
+                    Publish Poll
+                  </button>
+                </form>
+              </div>
+            </div>
+          )}
+
+          {/* =========================================================================
+              MODAL: EDIT BRIDAL POLL (EDITABLE BY BRIDE & PAYTON)
+             ========================================================================= */}
+          {showEditPollModal && isAdmin && (
+            <div className="fixed inset-0 z-50 bg-powder-950/40 backdrop-blur-sm flex items-center justify-center p-4">
+              <div className="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-powder-200 space-y-3.5 animate-in fade-in zoom-in-95 duration-200 max-h-[90vh] overflow-y-auto">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-lg font-bold font-serif-heading text-powder-900">
+                    Edit Bridal Poll 📊
+                  </h3>
+                  <button onClick={() => setShowEditPollModal(null)} className="text-powder-400 hover:text-powder-700 text-base">✕</button>
+                </div>
+
+                <form onSubmit={(e) => {
+                  e.preventDefault();
+                  const form = e.target;
+                  const rawOptions = form.optionsText.value.split('\n').filter(o => o.trim());
+                  
+                  // Preserve existing voter tallies for options with identical text
+                  const updatedOptions = rawOptions.map((text, idx) => {
+                    const trimmed = text.trim();
+                    const existing = showEditPollModal.options.find(o => o.text.trim() === trimmed);
+                    return {
+                      id: existing ? existing.id : ('opt-' + Date.now() + '-' + idx),
+                      text: trimmed,
+                      voters: existing ? existing.voters : []
+                    };
+                  });
+
+                  setPolls(prev => prev.map(p => p.id === showEditPollModal.id ? {
+                    ...p,
+                    title: form.title.value.trim(),
+                    description: form.description.value.trim(),
+                    isMultiSelect: form.isMultiSelect.checked,
+                    expiresAt: form.expiresAt.value.trim() || 'Open for Voting',
+                    options: updatedOptions
+                  } : p));
+
+                  setShowEditPollModal(null);
+                }} className="space-y-3 text-xs sm:text-sm">
+                  <div>
+                    <label className="text-[10px] uppercase font-semibold text-powder-700">Poll Question / Title</label>
+                    <input name="title" defaultValue={showEditPollModal.title} required className="w-full px-3 py-2 rounded-xl border border-powder-200 bg-white" />
+                  </div>
+
+                  <div>
+                    <label className="text-[10px] uppercase font-semibold text-powder-700">Short Note / Description</label>
+                    <input name="description" defaultValue={showEditPollModal.description} className="w-full px-3 py-2 rounded-xl border border-powder-200 bg-white" />
+                  </div>
+
+                  <div>
+                    <label className="text-[10px] uppercase font-semibold text-powder-700">Voting Status</label>
+                    <input name="expiresAt" defaultValue={showEditPollModal.expiresAt} className="w-full px-3 py-2 rounded-xl border border-powder-200 bg-white" />
+                  </div>
+
+                  <div>
+                    <label className="text-[10px] uppercase font-semibold text-powder-700">Options (one per line)</label>
+                    <textarea
+                      name="optionsText"
+                      required
+                      rows="4"
+                      defaultValue={showEditPollModal.options.map(o => o.text).join('\n')}
+                      className="w-full px-3 py-2 rounded-xl border border-powder-200 bg-white leading-relaxed"
+                    />
+                    <span className="text-[10px] text-powder-500">Edit option text or add new lines. Existing votes on unchanged lines will be preserved.</span>
+                  </div>
+
+                  <div className="flex items-center gap-2 pt-1">
+                    <input type="checkbox" name="isMultiSelect" id="editMultiSelect" defaultChecked={showEditPollModal.isMultiSelect} className="w-4 h-4 rounded text-powder-600 focus:ring-powder-400" />
+                    <label htmlFor="editMultiSelect" className="text-xs text-powder-800 font-medium">Allow bridesmaids to select multiple options</label>
+                  </div>
+
+                  <div className="flex gap-2 pt-2">
+                    <button
+                      type="submit"
+                      className="flex-1 py-2.5 bg-powder-500 hover:bg-powder-600 text-white font-semibold rounded-2xl shadow-xs"
+                    >
+                      Save Changes
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setPolls(prev => prev.filter(p => p.id !== showEditPollModal.id));
+                        setShowEditPollModal(null);
+                      }}
+                      className="px-3.5 py-2.5 bg-rose-50 hover:bg-rose-100 text-rose-700 font-semibold rounded-2xl border border-rose-200 shadow-2xs"
+                    >
+                      Delete Poll
+                    </button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          )}
+
+          {/* =========================================================================
+              MODAL 8: CREATE NEW TASK (EDITABLE BY BRIDE & PAYTON)
+             ========================================================================= */}
+          {showNewTaskModal && isAdmin && (
+            <div className="fixed inset-0 z-50 bg-powder-950/40 backdrop-blur-sm flex items-center justify-center p-4">
+              <div className="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-powder-200 space-y-3.5 animate-in fade-in zoom-in-95 duration-200">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-lg font-bold font-serif-heading text-powder-900">
+                    Add Checklist Task 📋
+                  </h3>
+                  <button onClick={() => setShowNewTaskModal(false)} className="text-powder-400 hover:text-powder-700 text-base">✕</button>
+                </div>
+
+                <form onSubmit={(e) => {
+                  e.preventDefault();
+                  const form = e.target;
+                  const newTask = {
+                    id: 't-' + Date.now(),
+                    title: form.title.value.trim(),
+                    category: form.category.value,
+                    assignee: form.assignee.value.trim() || 'All Bridesmaids',
+                    dueDate: form.dueDate.value.trim() || 'TBD',
+                    completed: false
+                  };
+                  setTasks([...tasks, newTask]);
+                  setShowNewTaskModal(false);
+                }} className="space-y-3 text-xs sm:text-sm">
+                  <div>
+                    <label className="text-[10px] uppercase font-semibold text-powder-700">Task Title</label>
+                    <input name="title" required className="w-full px-3 py-2 rounded-xl border border-powder-200 bg-white" />
+                  </div>
+                  <div>
+                    <label className="text-[10px] uppercase font-semibold text-powder-700">Category</label>
+                    <select name="category" className="w-full px-3 py-2 rounded-xl border border-powder-200 bg-white">
+                      <option value="Attire">Attire</option>
+                      <option value="Hotel">Hotel</option>
+                      <option value="Shower">Shower</option>
+                      <option value="Rehearsal">Rehearsal</option>
+                      <option value="Day-Of">Day-Of</option>
+                    </select>
+                  </div>
+                  <div className="grid grid-cols-2 gap-2">
+                    <div>
+                      <label className="text-[10px] uppercase font-semibold text-powder-700">Assignee</label>
+                      <input name="assignee" defaultValue="All Bridesmaids" className="w-full px-3 py-2 rounded-xl border border-powder-200 bg-white" />
+                    </div>
+                    <div>
+                      <label className="text-[10px] uppercase font-semibold text-powder-700">Due Date</label>
+                      <input name="dueDate" placeholder="e.g. Dec 1" className="w-full px-3 py-2 rounded-xl border border-powder-200 bg-white" />
+                    </div>
+                  </div>
+
+                  <button
+                    type="submit"
+                    className="w-full py-2.5 bg-powder-500 hover:bg-powder-600 text-white font-semibold rounded-2xl shadow-xs mt-2"
+                  >
+                    Add Task
+                  </button>
+                </form>
+              </div>
+            </div>
+          )}
+
+          {/* =========================================================================
+              MODAL 9: EDIT CHECKLIST TASK (EDITABLE BY BRIDE & PAYTON)
+             ========================================================================= */}
+          {showEditTaskModal && isAdmin && (
+            <div className="fixed inset-0 z-50 bg-powder-950/40 backdrop-blur-sm flex items-center justify-center p-4">
+              <div className="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-powder-200 space-y-3.5 animate-in fade-in zoom-in-95 duration-200">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-lg font-bold font-serif-heading text-powder-900">
+                    Edit Checklist Task 📋
+                  </h3>
+                  <button onClick={() => setShowEditTaskModal(null)} className="text-powder-400 hover:text-powder-700 text-base">✕</button>
+                </div>
+
+                <form onSubmit={(e) => {
+                  e.preventDefault();
+                  const form = e.target;
+                  setTasks(prev => prev.map(t => t.id === showEditTaskModal.id ? {
+                    ...t,
+                    title: form.title.value.trim(),
+                    category: form.category.value,
+                    assignee: form.assignee.value.trim() || 'All Bridesmaids',
+                    dueDate: form.dueDate.value.trim() || 'TBD',
+                    completed: form.completed.checked
+                  } : t));
+                  setShowEditTaskModal(null);
+                }} className="space-y-3 text-xs sm:text-sm">
+                  <div>
+                    <label className="text-[10px] uppercase font-semibold text-powder-700">Task Title</label>
+                    <input name="title" defaultValue={showEditTaskModal.title} required className="w-full px-3 py-2 rounded-xl border border-powder-200 bg-white" />
+                  </div>
+                  <div>
+                    <label className="text-[10px] uppercase font-semibold text-powder-700">Category</label>
+                    <select name="category" defaultValue={showEditTaskModal.category} className="w-full px-3 py-2 rounded-xl border border-powder-200 bg-white">
+                      <option value="Attire">Attire</option>
+                      <option value="Hotel">Hotel</option>
+                      <option value="Shower">Shower</option>
+                      <option value="Rehearsal">Rehearsal</option>
+                      <option value="Day-Of">Day-Of</option>
+                    </select>
+                  </div>
+                  <div className="grid grid-cols-2 gap-2">
+                    <div>
+                      <label className="text-[10px] uppercase font-semibold text-powder-700">Assignee</label>
+                      <input name="assignee" defaultValue={showEditTaskModal.assignee} className="w-full px-3 py-2 rounded-xl border border-powder-200 bg-white" />
+                    </div>
+                    <div>
+                      <label className="text-[10px] uppercase font-semibold text-powder-700">Due Date</label>
+                      <input name="dueDate" defaultValue={showEditTaskModal.dueDate} placeholder="e.g. Dec 1" className="w-full px-3 py-2 rounded-xl border border-powder-200 bg-white" />
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-2 pt-1">
+                    <input type="checkbox" name="completed" id="taskCompleted" defaultChecked={showEditTaskModal.completed} className="w-4 h-4 rounded text-powder-600 focus:ring-powder-400" />
+                    <label htmlFor="taskCompleted" className="text-xs text-powder-800 font-medium">Mark as completed</label>
+                  </div>
+
+                  <div className="flex gap-2 pt-2">
+                    <button
+                      type="submit"
+                      className="flex-1 py-2.5 bg-powder-500 hover:bg-powder-600 text-white font-semibold rounded-2xl shadow-xs"
+                    >
+                      Save Changes
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setTasks(prev => prev.filter(t => t.id !== showEditTaskModal.id));
+                        setShowEditTaskModal(null);
+                      }}
+                      className="px-3.5 py-2.5 bg-rose-50 hover:bg-rose-100 text-rose-700 font-semibold rounded-2xl border border-rose-200 shadow-2xs"
+                    >
+                      Delete Task
+                    </button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          )}
+
+        </div>
+      );
+    }
+
+    ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+  </script>
+</body>
+</html>

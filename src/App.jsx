@@ -13,6 +13,13 @@ import {
   INITIAL_POLLS,
   INITIAL_MESSAGES
 } from './data/initialData';
+import {
+  getStoredFirebaseConfig,
+  saveStoredFirebaseConfig,
+  subscribeToLiveHub,
+  queueCloudSync,
+  syncHubToCloud
+} from './services/firebase';
 
 export default function App() {
   const [activeTab, setActiveTab] = useState('dresses');
@@ -136,7 +143,76 @@ export default function App() {
 
   const chatEndRef = useRef(null);
 
-  // Persistence
+  // Cloud Sync State & Listeners
+  const [cloudStatus, setCloudStatus] = useState('offline'); // 'offline' | 'connecting' | 'connected' | 'error'
+  const [showCloudConfigModal, setShowCloudConfigModal] = useState(false);
+  const [firebaseConfigState, setFirebaseConfigState] = useState(getStoredFirebaseConfig);
+  const isRemoteUpdateRef = useRef(false);
+
+  // Subscribe to Live Real-time Firestore Updates
+  useEffect(() => {
+    setCloudStatus('connecting');
+    const unsubscribe = subscribeToLiveHub(
+      (liveData) => {
+        if (liveData) {
+          setCloudStatus('connected');
+          isRemoteUpdateRef.current = true;
+          if (liveData.brideProfile) setBrideProfile(liveData.brideProfile);
+          if (liveData.bridesmaids && Array.isArray(liveData.bridesmaids)) setBridesmaids(liveData.bridesmaids);
+          if (liveData.weddingDetails) setWeddingDetails(liveData.weddingDetails);
+          if (liveData.dressReq) setDressReq(liveData.dressReq);
+          if (liveData.hotel) setHotel(liveData.hotel);
+          if (liveData.tasks && Array.isArray(liveData.tasks)) setTasks(liveData.tasks);
+          if (liveData.polls && Array.isArray(liveData.polls)) setPolls(liveData.polls);
+          if (liveData.messages && Array.isArray(liveData.messages)) setMessages(liveData.messages);
+          if (liveData.pinnedNote) setPinnedNote(liveData.pinnedNote);
+          setTimeout(() => { isRemoteUpdateRef.current = false; }, 300);
+        } else {
+          // Document does not exist in Cloud yet, seed it with initial data
+          setCloudStatus('connected');
+          syncHubToCloud({
+            brideProfile,
+            bridesmaids,
+            weddingDetails,
+            dressReq,
+            hotel,
+            tasks,
+            polls,
+            messages,
+            pinnedNote
+          });
+        }
+      },
+      (error) => {
+        console.warn('Live Cloud Sync offline or error:', error);
+        setCloudStatus('offline');
+      }
+    );
+
+    if (!unsubscribe) {
+      setCloudStatus('offline');
+    }
+
+    return () => {
+      if (unsubscribe) unsubscribe();
+    };
+  }, [firebaseConfigState]);
+
+  // Push local updates to Live Cloud (debounced)
+  useEffect(() => {
+    if (isRemoteUpdateRef.current || cloudStatus !== 'connected') return;
+    queueCloudSync({
+      brideProfile,
+      bridesmaids,
+      weddingDetails,
+      dressReq,
+      hotel,
+      tasks,
+      polls,
+      messages,
+      pinnedNote
+    });
+  }, [brideProfile, bridesmaids, weddingDetails, dressReq, hotel, tasks, polls, messages, pinnedNote, cloudStatus]);
   useEffect(() => {
     localStorage.setItem('bridal_v7_bride', JSON.stringify(brideProfile));
   }, [brideProfile]);
@@ -462,6 +538,30 @@ export default function App() {
         </div>
 
         <div className="flex items-center gap-2">
+          {/* Real-time Cloud Sync Status Button */}
+          <button
+            onClick={() => setShowCloudConfigModal(true)}
+            className={`px-3 py-1.5 text-xs font-semibold rounded-xl border transition-all shadow-xs flex items-center gap-1.5 ${
+              cloudStatus === 'connected'
+                ? 'bg-emerald-50 text-emerald-800 border-emerald-300 hover:bg-emerald-100'
+                : cloudStatus === 'connecting'
+                ? 'bg-amber-50 text-amber-800 border-amber-300 animate-pulse'
+                : 'bg-white hover:bg-powder-50 text-powder-700 border-powder-300'
+            }`}
+            title="Real-time multi-user synchronization settings"
+          >
+            <span className={`w-2 h-2 rounded-full ${
+              cloudStatus === 'connected' ? 'bg-emerald-500' :
+              cloudStatus === 'connecting' ? 'bg-amber-400' : 'bg-gray-400'
+            }`}></span>
+            <span className="hidden sm:inline">
+              {cloudStatus === 'connected' ? 'Live Cloud Active' : 'Live Cloud Sync'}
+            </span>
+            <span className="sm:hidden">
+              {cloudStatus === 'connected' ? 'Live' : 'Cloud'}
+            </span>
+          </button>
+
           {isAdmin && (
             <span className="hidden sm:inline-block text-xs font-bold text-powder-800 bg-powder-100 px-3 py-1 rounded-full border border-powder-200">
               {currentUser?.name?.toLowerCase().includes('payton') ? 'Payton Admin Mode 💎' : 'Bride Admin Mode 👑'}
@@ -2375,6 +2475,221 @@ export default function App() {
                 >
                   Delete Task
                 </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* =========================================================================
+          LIVE REAL-TIME CLOUD SYNC CONFIGURATION MODAL
+         ========================================================================= */}
+      {showCloudConfigModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-xs">
+          <div className="bg-white rounded-3xl max-w-lg w-full p-6 shadow-xl border border-powder-200 max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between pb-3 border-b border-powder-100">
+              <div className="flex items-center gap-2">
+                <span className="text-2xl">☁️</span>
+                <div>
+                  <h3 className="text-lg font-bold font-serif text-powder-900">Live Multi-User Cloud Sync</h3>
+                  <p className="text-xs text-powder-600">Connect Firebase Firestore for instant real-time sync across all phones</p>
+                </div>
+              </div>
+              <button
+                onClick={() => setShowCloudConfigModal(false)}
+                className="w-8 h-8 rounded-full bg-powder-100 hover:bg-powder-200 text-powder-800 flex items-center justify-center font-bold text-sm"
+              >
+                ✕
+              </button>
+            </div>
+
+            {/* Current Connection Status Box */}
+            <div className={`mt-4 p-4 rounded-2xl border ${
+              cloudStatus === 'connected'
+                ? 'bg-emerald-50/80 border-emerald-200'
+                : cloudStatus === 'connecting'
+                ? 'bg-amber-50/80 border-amber-200'
+                : 'bg-powder-50/80 border-powder-200'
+            }`}>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <span className={`w-3 h-3 rounded-full ${
+                    cloudStatus === 'connected' ? 'bg-emerald-500 animate-pulse' :
+                    cloudStatus === 'connecting' ? 'bg-amber-500 animate-pulse' : 'bg-gray-400'
+                  }`}></span>
+                  <span className="text-sm font-bold text-powder-950">
+                    {cloudStatus === 'connected' ? 'Status: 🟢 Connected & Syncing Live' :
+                     cloudStatus === 'connecting' ? 'Status: 🟡 Connecting...' :
+                     'Status: ⚪ Local Storage Mode (Single Device)'}
+                  </span>
+                </div>
+                {cloudStatus === 'connected' && (
+                  <button
+                    onClick={() => {
+                      syncHubToCloud({
+                        brideProfile,
+                        bridesmaids,
+                        weddingDetails,
+                        dressReq,
+                        hotel,
+                        tasks,
+                        polls,
+                        messages,
+                        pinnedNote
+                      });
+                      alert('✓ All current data pushed to the cloud!');
+                    }}
+                    className="text-xs bg-emerald-600 hover:bg-emerald-700 text-white font-semibold px-2.5 py-1 rounded-lg"
+                  >
+                    Force Sync ↑
+                  </button>
+                )}
+              </div>
+              <p className="text-xs text-powder-700 mt-2 leading-relaxed">
+                {cloudStatus === 'connected'
+                  ? 'Great news! Any bridesmaid who visits the web link will now see live updates to checklists, polls, dress statuses, and chat in real time.'
+                  : 'Currently data is saved to this device only. Connect your free Firebase Firestore database below so any bridesmaid who adds her profile or votes stays permanently saved and shared live with everyone!'}
+              </p>
+            </div>
+
+            {/* Step-by-Step Instructions */}
+            <div className="mt-4 p-4 rounded-2xl bg-powder-100/50 border border-powder-200 text-xs text-powder-800 space-y-1.5">
+              <div className="font-bold text-powder-900 flex items-center gap-1.5">
+                <span>📋 How to get your free Firebase keys (2 minutes):</span>
+              </div>
+              <ol className="list-decimal list-inside space-y-1 pl-1 text-[11px] leading-relaxed">
+                <li>Go to <a href="https://console.firebase.google.com" target="_blank" rel="noreferrer" className="text-powder-700 font-bold underline">console.firebase.google.com</a> (free with your Google account).</li>
+                <li>Click <strong>Add Project</strong> (name it e.g. <code className="bg-white px-1 rounded">bridal-hub</code>).</li>
+                <li>Click the <strong>Web &lt;/&gt;</strong> icon to register app & copy the <code className="bg-white px-1 rounded">firebaseConfig</code> keys.</li>
+                <li>In Firebase sidebar, click <strong>Build ➔ Firestore Database ➔ Create database</strong> (choose "Start in test mode").</li>
+              </ol>
+            </div>
+
+            {/* Quick Config Form */}
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                const formData = new FormData(e.target);
+                const rawJson = formData.get('rawJson');
+                let newConfig = { ...firebaseConfigState };
+
+                if (rawJson && rawJson.trim()) {
+                  try {
+                    // Extract JSON or js object syntax
+                    const cleaned = rawJson.replace(/const\s+firebaseConfig\s*=\s*/, '').replace(/;$/, '');
+                    const parsed = Function('"use strict";return (' + cleaned + ')')();
+                    newConfig = { ...newConfig, ...parsed };
+                  } catch (err) {
+                    alert('Could not parse configuration format. Please verify keys.');
+                    return;
+                  }
+                } else {
+                  newConfig = {
+                    apiKey: formData.get('apiKey')?.trim() || newConfig.apiKey,
+                    authDomain: formData.get('authDomain')?.trim() || newConfig.authDomain,
+                    projectId: formData.get('projectId')?.trim() || newConfig.projectId,
+                    storageBucket: formData.get('storageBucket')?.trim() || newConfig.storageBucket,
+                    messagingSenderId: formData.get('messagingSenderId')?.trim() || newConfig.messagingSenderId,
+                    appId: formData.get('appId')?.trim() || newConfig.appId
+                  };
+                }
+
+                if (!newConfig.projectId || !newConfig.apiKey) {
+                  alert('Please enter at least Project ID and API Key.');
+                  return;
+                }
+
+                saveStoredFirebaseConfig(newConfig);
+                setFirebaseConfigState(newConfig);
+                setShowCloudConfigModal(false);
+                alert('✓ Firebase configuration saved! Connecting to live cloud sync...');
+              }}
+              className="mt-4 space-y-3"
+            >
+              <div>
+                <label className="text-[11px] font-bold uppercase text-powder-800 block mb-1">
+                  Option A: Paste Firebase Config Object (Fastest)
+                </label>
+                <textarea
+                  name="rawJson"
+                  rows="3"
+                  placeholder='paste: { apiKey: "...", projectId: "...", ... }'
+                  className="w-full text-xs font-mono px-3 py-2 rounded-xl border border-powder-200 bg-powder-50/50"
+                ></textarea>
+              </div>
+
+              <div className="relative flex py-1 items-center">
+                <div className="flex-grow border-t border-powder-200"></div>
+                <span className="flex-shrink mx-3 text-[10px] uppercase font-bold text-powder-500">OR Enter Fields Manually</span>
+                <div className="flex-grow border-t border-powder-200"></div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-2">
+                <div>
+                  <label className="text-[10px] uppercase font-bold text-powder-700">Project ID *</label>
+                  <input
+                    name="projectId"
+                    defaultValue={firebaseConfigState.projectId}
+                    placeholder="e.g. my-wedding-hub"
+                    className="w-full text-xs px-3 py-2 rounded-xl border border-powder-200"
+                  />
+                </div>
+                <div>
+                  <label className="text-[10px] uppercase font-bold text-powder-700">API Key *</label>
+                  <input
+                    name="apiKey"
+                    type="password"
+                    defaultValue={firebaseConfigState.apiKey}
+                    placeholder="AIzaSy..."
+                    className="w-full text-xs px-3 py-2 rounded-xl border border-powder-200"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-2">
+                <div>
+                  <label className="text-[10px] uppercase font-bold text-powder-700">Auth Domain</label>
+                  <input
+                    name="authDomain"
+                    defaultValue={firebaseConfigState.authDomain}
+                    placeholder="...firebaseapp.com"
+                    className="w-full text-xs px-3 py-2 rounded-xl border border-powder-200"
+                  />
+                </div>
+                <div>
+                  <label className="text-[10px] uppercase font-bold text-powder-700">App ID</label>
+                  <input
+                    name="appId"
+                    defaultValue={firebaseConfigState.appId}
+                    placeholder="1:123456789:web:..."
+                    className="w-full text-xs px-3 py-2 rounded-xl border border-powder-200"
+                  />
+                </div>
+              </div>
+
+              <div className="flex gap-2 pt-2">
+                <button
+                  type="submit"
+                  className="flex-1 py-2.5 bg-gradient-to-r from-powder-500 to-powder-600 hover:from-powder-600 hover:to-powder-700 text-white font-semibold text-xs sm:text-sm rounded-xl shadow-xs"
+                >
+                  Save & Connect Live Sync ✨
+                </button>
+                {cloudStatus === 'connected' && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (confirm('Disconnect from Firebase cloud sync and return to local storage?')) {
+                        const empty = { apiKey: '', authDomain: '', projectId: '', storageBucket: '', messagingSenderId: '', appId: '' };
+                        saveStoredFirebaseConfig(empty);
+                        setFirebaseConfigState(empty);
+                        setCloudStatus('offline');
+                      }
+                    }}
+                    className="px-3 py-2.5 bg-rose-50 hover:bg-rose-100 text-rose-700 font-semibold text-xs rounded-xl border border-rose-200"
+                  >
+                    Disconnect
+                  </button>
+                )}
               </div>
             </form>
           </div>

@@ -570,7 +570,7 @@ export default function App() {
   // Photo upload (Restricted to Bride & Payton)
   const handlePhotoUpload = (e) => {
     if (!isAdmin) {
-      alert("Only the Bride (Adrianna) and Payton have permission to edit the wedding photo.");
+      showToast("🔒 Only the Bride (Adrianna) and Payton can edit the photo.");
       return;
     }
     const file = e.target.files[0];
@@ -578,6 +578,7 @@ export default function App() {
       const reader = new FileReader();
       reader.onloadend = () => {
         setWeddingDetails(prev => ({ ...prev, photoUrl: reader.result }));
+        showToast("✓ Couple photo updated!");
       };
       reader.readAsDataURL(file);
     }
@@ -586,7 +587,7 @@ export default function App() {
   // Invitation upload (Restricted to Bride & Payton)
   const handleInvitationUpload = (e) => {
     if (!isAdmin) {
-      alert("Only the Bride (Adrianna) and Payton have permission to edit the invitation.");
+      showToast("🔒 Only the Bride (Adrianna) and Payton can edit the invitation.");
       return;
     }
     const file = e.target.files[0];
@@ -594,6 +595,7 @@ export default function App() {
       const reader = new FileReader();
       reader.onloadend = () => {
         setWeddingDetails(prev => ({ ...prev, invitationUrl: reader.result }));
+        showToast("✓ Wedding invitation updated!");
       };
       reader.readAsDataURL(file);
     }
@@ -747,7 +749,7 @@ export default function App() {
                   onClick={() => setShowPhotoModal(true)}
                   onError={(e) => {
                     e.target.onerror = null;
-                    e.target.src = "file:///C:/Users/payto/.gemini/antigravity/brain/43b1b336-fecd-4044-b979-53ca0b0668bf/.user_uploaded/media_1793224429903_9e0e916c.jpg";
+                    e.target.src = "./couple.jpg";
                   }}
                 />
                 
@@ -2716,7 +2718,7 @@ export default function App() {
                         messages,
                         pinnedNote
                       });
-                      alert('✓ All current data pushed to the cloud!');
+                      showToast('✓ All current data pushed to the cloud!');
                     }}
                     className="text-xs bg-emerald-600 hover:bg-emerald-700 text-white font-semibold px-2.5 py-1 rounded-lg"
                   >
@@ -2759,7 +2761,7 @@ export default function App() {
                     const parsed = Function('"use strict";return (' + cleaned + ')')();
                     newConfig = { ...newConfig, ...parsed };
                   } catch (err) {
-                    alert('Could not parse configuration format. Please verify keys.');
+                    showToast('Could not parse configuration format. Please verify keys.');
                     return;
                   }
                 } else {
@@ -2774,14 +2776,14 @@ export default function App() {
                 }
 
                 if (!newConfig.projectId || !newConfig.apiKey) {
-                  alert('Please enter at least Project ID and API Key.');
+                  showToast('Please enter at least Project ID and API Key.');
                   return;
                 }
 
                 saveStoredFirebaseConfig(newConfig);
                 setFirebaseConfigState(newConfig);
                 setShowCloudConfigModal(false);
-                alert('✓ Firebase configuration saved! Connecting to live cloud sync...');
+                showToast('✓ Firebase configuration saved! Connecting to live cloud sync...');
               }}
               className="mt-4 space-y-3"
             >

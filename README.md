@@ -1,5 +1,7 @@
 # 💍 Bridal Party Hub (PWA)
 
+> **✨ Live Web App**: [https://fractaldaisy.github.io/bridal-party-hub/](https://fractaldaisy.github.io/bridal-party-hub/)
+
 A mobile-first, elegant Progressive Web App (PWA) designed for brides and bridesmaids to coordinate dresses, hotel reservations, voting polls, and wedding checklists all in one beautiful place.
 
 ---

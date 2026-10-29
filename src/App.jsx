@@ -89,7 +89,7 @@ export default function App() {
   // Active User Profile: Explicitly required for actions
   const [currentUser, setCurrentUser] = useState(() => {
     const saved = localStorage.getItem('bridal_v7_active_user');
-    return saved ? JSON.parse(saved) : null;
+    return saved ? JSON.parse(saved) : INITIAL_BRIDE;
   });
 
   // PERMISSION: Both the Bride (Adrianna / Rain) AND Payton have full admin & editing access
@@ -1137,8 +1137,7 @@ export default function App() {
                     </div>
 
                     <div className="flex items-center gap-2 self-end sm:self-center">
-                      {isAdmin ? (
-                        <select
+                      <select
                           value={bm.dressStatus}
                           onChange={(e) => {
                             const newStatus = e.target.value;
@@ -1156,16 +1155,6 @@ export default function App() {
                           <option value="In Alterations">In Alterations</option>
                           <option value="Ready">Ready to Wear! ✨</option>
                         </select>
-                      ) : (
-                        <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
-                          bm.dressStatus === 'Ready' ? 'bg-emerald-100 text-emerald-800' :
-                          bm.dressStatus === 'Ordered' ? 'bg-sky-100 text-sky-800' :
-                          bm.dressStatus === 'In Alterations' ? 'bg-indigo-100 text-indigo-800' :
-                          'bg-amber-100 text-amber-800'
-                        }`}>
-                          {bm.dressStatus}
-                        </span>
-                      )}
                     </div>
                   </div>
                 ))}
@@ -1671,14 +1660,12 @@ export default function App() {
                 <p className="text-xs sm:text-sm text-powder-600 mt-0.5">Roles, contacts & dress order status</p>
               </div>
 
-              {isAdmin && (
-                <button
+              <button
                   onClick={() => setShowBridesmaidModal({ isNew: true })}
                   className="px-4 py-2 text-xs sm:text-sm font-semibold bg-powder-500 hover:bg-powder-600 text-white rounded-xl shadow-xs transition-all"
                 >
                   + Add Member
                 </button>
-              )}
             </div>
 
             {/* The Bride Card */}
@@ -1697,14 +1684,12 @@ export default function App() {
                 <span className="text-xs px-3 py-1 rounded-full bg-white text-powder-800 font-semibold border border-powder-200 shadow-2xs">
                   Fairytale Bride ✨
                 </span>
-                {isAdmin && (
-                  <button
+                <button
                     onClick={() => setShowBridesmaidModal({ ...brideProfile, isBrideProfile: true })}
                     className="px-2.5 py-1 text-xs bg-white hover:bg-powder-100 text-powder-700 rounded-xl border border-powder-300 font-semibold transition-all"
                   >
                     Edit ✏️
                   </button>
-                )}
               </div>
             </div>
 
@@ -1727,14 +1712,12 @@ export default function App() {
                       </div>
                     </div>
 
-                    {(isAdmin || currentUser?.name === bm.name) && (
-                      <button
-                        onClick={() => setShowBridesmaidModal(bm)}
+                    <button
+                        onClick={(e) => { e.stopPropagation(); setShowBridesmaidModal(bm); }}
                         className="px-2.5 py-1 text-xs bg-white hover:bg-powder-100 text-powder-700 rounded-xl border border-powder-300 font-semibold transition-all"
                       >
                         Edit ✏️
                       </button>
-                    )}
                   </div>
 
                   <div className="pt-2 border-t border-powder-200/60 flex flex-wrap gap-2 text-xs">

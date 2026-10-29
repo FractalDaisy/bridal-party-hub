@@ -1,98 +1,75 @@
-# 💍 Bridal Party Hub (PWA)
+# 💍 Adrianna & Thomas — Wedding & Bridal Party Hub
 
-> **✨ Live Web App**: [https://fractaldaisy.github.io/bridal-party-hub/](https://fractaldaisy.github.io/bridal-party-hub/)
+> **✨ Open the Live Web App**: [https://fractaldaisy.github.io/bridal-party-hub/](https://fractaldaisy.github.io/bridal-party-hub/)
 
-A mobile-first, elegant Progressive Web App (PWA) designed for brides and bridesmaids to coordinate dresses, hotel reservations, voting polls, and wedding checklists all in one beautiful place.
-
----
-
-## ✨ Features Built Specifically For You
-
-1. **👗 Bridesmaid Dress Tracker & Attire Guidelines**
-   - **Order Status Tracking:** Easily see who has *Not Ordered*, *Ordered*, *Delivered*, or is *Altered & Ready*.
-   - **Requirements Board:** Color palette swatches, fabric requirements, designer store links, order deadline, shoe advice (e.g. grass-safe block heels), and hair/jewelry guidelines.
-   - **Tailoring Notes:** Track alteration notes and dress sizes for each girl.
-
-2. **🏨 Wedding Hotel Block & Lodging Tracker**
-   - **Room Block Info:** Hotel name, address, Google Maps link, and direct booking button.
-   - **1-Click Promo Code Copy:** Fast copy button for the discounted wedding group code.
-   - **RSVP & Roommate Tracking:** Track who has booked their room, check-in dates, and roommate pairings.
-   - **Shuttle Schedule:** Clear notes on wedding-day transportation to and from the venue.
-
-3. **📊 Customizable Poll Generator**
-   - **Launch Custom Polls:** Create questions for rehearsal dinner attire, bridal shower themes, morning-of breakfast, etc.
-   - **Customizable Settings:** Toggle single-choice vs. multi-choice, and choose whether bridesmaids can add their own custom suggestions.
-   - **Visual Results:** Live voting bars with percentage breakdowns and voter names.
-
-4. **✅ Wedding & Event Checklists**
-   - Organized by category: *Attire*, *Hotel*, *Bridal Shower*, *Rehearsal Dinner*, *Wedding Morning Prep*.
-   - Assign tasks to specific bridesmaids with due dates.
-   - Live completion progress bar.
-
-5. **👯‍♀️ Bridal Party Directory**
-   - Quick phone and contact roster with 1-tap call/text links.
+A whimsical, mobile-first Progressive Web App (PWA) created for **Adrianna Eskew & Thomas Albritton's wedding** to coordinate bridesmaid attire, hotel bookings, voting polls, group messages, and checklists all in one beautiful place.
 
 ---
 
-## 🚀 Instant Preview (No Setup Required!)
-
-You can test this app immediately right now:
-1. Open File Explorer on Windows.
-2. Navigate to: `C:\Users\payto\.gemini\antigravity\scratch\bridal-party-hub\`
-3. Double-click **`preview.html`**.
-4. It will open in your browser with full interactivity, mobile responsiveness, and local storage persistence!
+## 🕊️ Wedding Celebration Details
+- **Date**: Saturday, March 6, 2027
+- **Time**: 5:30 PM (Five Thirty in the Afternoon)
+- **Venue**: 2008 Middleground Road, Waynesboro, GA 30830
+- **Theme**: Whimsical Powder Blue & Champagne Fairytale
 
 ---
 
-## 🐙 How to Put This App on GitHub
+## ✨ Key Features
 
-Because this is a standard React + Vite PWA, you can push it to GitHub in 3 quick steps:
+### 👗 1. Bridesmaid Dress Order Tracker
+- **Show Me Your Mumu Fabric Swatch**: Features the official Show Me Your Mumu **"Steel Blue Stretch"** fabric swatch with a direct link to order the $3 swatch to match shoes and accessories.
+- **Live Order Status Tracker**: Displays each bridesmaid's order progress (*Not Ordered*, *Ordered*, *In Alterations*, *Ready*).
+- **Attire Guidelines**: Tailoring notes, deadlines, and shoe recommendations.
 
-### Step 1: Initialize Git in your project
-Open a terminal (or PowerShell / Git Bash) inside this folder:
-```bash
-cd "C:\Users\payto\.gemini\antigravity\scratch\bridal-party-hub"
-git init
-git add .
-git commit -m "Initial commit: Bridal Party Hub PWA"
-```
+### 🏨 2. Hotel Block & Lodging Suite
+- **Exclusive Group Block**: Quick-copy button for the group discount code (`ESKEWALBRITTON27`).
+- **Room RSVP Tracker**: Keeps track of which bridesmaids have reserved their room, their dates of stay, and roommate pairings.
+- **Shuttle Schedule**: Transportation timing between the hotel and the ceremony/reception venue.
 
-### Step 2: Create a repository on GitHub
-1. Go to [github.com/new](https://github.com/new).
-2. Name your repository (e.g. `bridal-party-hub`).
-3. Leave it Public or Private, and click **Create repository**.
+### 📊 3. Interactive Polls with Live Tallies
+- **Auto-Tallying Percentages**: Votes calculate dynamically with animated progress bars.
+- **👑 Leading Choice Indicator**: Highlights the top-voted option.
+- **Customizable**: Supports single-choice vs. multi-choice questions.
+- **Profile Tagging**: Every vote is tagged with the bridesmaid's name.
 
-### Step 3: Link and Push
-Copy the commands shown on GitHub:
-```bash
-git remote add origin https://github.com/<YOUR-USERNAME>/bridal-party-hub.git
-git branch -M main
-git push -u origin main
-```
+### 💬 4. Bridal Party Chat Board
+- **Group Feed**: Interactive message feed with role badges and timestamps.
+- **Pinned Announcement**: An editable bride's reminder banner at the top of the chat for important deadlines.
+- **Quick Emoji Reactions**: React instantly with ❤️, 🥂, 🎉, 👗, and 👍.
+- **Smart Editing**: Includes discreet editing for the Bride (Adrianna) and Payton.
 
----
+### ✅ 5. Milestone Wedding Checklists
+- Organized across key milestones: *Attire*, *Accommodations*, *Bridal Shower*, *Rehearsal Dinner*, and *Day-Of Morning Prep*.
+- Filterable tasks with due dates, assignees, and a live completion progress bar.
 
-## 🌐 Free 1-Click Hosting Options
+### 👑 6. Co-Admin System (Bride & Payton)
+- Both **The Bride (Adrianna)** and **Payton (Maid of Honor)** have administrative privileges across every section.
+- Direct editing and deletion of checklists, polls, member profiles, and wedding logistics.
+- Zoomable modals for the keepsake pine engagement photo and official floral invitation card.
 
-Once your code is on GitHub, you can publish it live to the web completely free:
-
-### Option A: Vercel or Netlify (Fastest & Easiest)
-1. Sign in to [Vercel](https://vercel.com) or [Netlify](https://netlify.com) using your GitHub account.
-2. Click **Add New Project** and select `bridal-party-hub`.
-3. Click **Deploy**. Within 60 seconds you'll receive a live URL (e.g. `bridal-party-hub.vercel.app`) to share with your bridesmaids!
-
-### Option B: GitHub Pages
-1. In your `package.json`, add: `"homepage": "https://<YOUR-USERNAME>.github.io/bridal-party-hub"`.
-2. In `vite.config.js`, set `base: '/bridal-party-hub/'`.
-3. Use GitHub Actions or `gh-pages` to deploy directly from your GitHub repo.
+### ☁️ 7. Real-Time Multi-User Cloud Sync
+- Powered by Firebase Firestore for real-time synchronization across devices.
+- Changes made by any bridesmaid on her phone update instantly on everyone else's screen without needing to refresh.
 
 ---
 
-## 📱 How Bridesmaids "Install" It on Their Phones
+## 📲 How Bridesmaids Install It on Their Phones
 
-No app store downloads or developer fees are required:
+No app store downloads or developer accounts are required. Anyone can install it directly from the browser:
 
-- **On iPhone (Safari):** Open the link ➔ Tap the **Share** button (box with upward arrow) ➔ Tap **"Add to Home Screen"**.
-- **On Android (Chrome):** Open the link ➔ Tap the three dots menu ➔ Tap **"Install App"** or **"Add to Home screen"**.
+### 🍎 On iPhone (Safari)
+1. Open [https://fractaldaisy.github.io/bridal-party-hub/](https://fractaldaisy.github.io/bridal-party-hub/) in **Safari**.
+2. Tap the **Share** button (the square with an arrow pointing up at the bottom).
+3. Scroll down and tap **"Add to Home Screen"** ➕.
+4. Tap **Add**. The app will now appear on your home screen with its own wedding ring icon!
 
-The app will appear with its own icon on their phone's home screen, open full-screen without browser bars, and work just like a native mobile app!
+### 🤖 On Android (Chrome)
+1. Open [https://fractaldaisy.github.io/bridal-party-hub/](https://fractaldaisy.github.io/bridal-party-hub/) in **Chrome**.
+2. Tap the **Menu** (three dots ⋮ in the top right corner) or the **"Install App"** prompt at the bottom.
+3. Tap **Install** / **Add to Home Screen**.
+
+---
+
+<p align="center">
+  <i>"Two souls, one heartfelt beginning in the pines surrounded by family & friends."</i>
+</p>

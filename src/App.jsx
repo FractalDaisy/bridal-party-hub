@@ -261,8 +261,19 @@ export default function App() {
   const [toastMessage, setToastMessage] = useState('');
   const showToast = (msg) => {
     setToastMessage(msg);
-    if (navigator.vibrate) navigator.vibrate(30);
+    if (navigator.vibrate) {
+      try { navigator.vibrate(30); } catch(e) {}
+    }
     setTimeout(() => setToastMessage(''), 2600);
+  };
+
+  const copyWithToast = (text, message) => {
+    try {
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).catch(() => {});
+      }
+    } catch(e) {}
+    showToast(message);
   };
 
   // Live Wedding Countdown Timer (March 6, 2027 at 5:30 PM EST)
@@ -539,9 +550,8 @@ export default function App() {
   };
 
   const handleCopyCode = () => {
-    navigator.clipboard.writeText(hotel.groupCode || '');
+    copyWithToast(hotel.groupCode || '', `✓ Hotel promo code ${hotel.groupCode} copied!`);
     setCopiedCode(true);
-    showToast(`✓ Hotel promo code ${hotel.groupCode} copied!`);
     setTimeout(() => setCopiedCode(false), 2200);
   };
 
@@ -853,10 +863,7 @@ export default function App() {
                     <button 
                       key={i} 
                       type="button"
-                      onClick={() => {
-                        navigator.clipboard?.writeText(hex);
-                        showToast(`✓ Color swatch ${hex} copied to clipboard!`);
-                      }}
+                      onClick={() => copyWithToast(hex, `✓ Color swatch ${hex} copied to clipboard!`)}
                       className="w-6 h-6 rounded-full border-2 border-white shadow-2xs hover:scale-125 transition-transform cursor-pointer" 
                       style={{ backgroundColor: hex }}
                       title={`Click to copy hex ${hex}`}

@@ -11,13 +11,38 @@
   --sar: env(safe-area-inset-right, 0px);
 }
 
+html {
+  scroll-behavior: smooth;
+  scrollbar-gutter: stable;
+}
+
 html, body {
   font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   background-color: #fcf9f9;
   color: #2d2627;
   -webkit-tap-highlight-color: transparent;
-  /* Prevent horizontal bouncing on mobile */
+  /* Modern text rendering for desktop browsers */
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  /* Prevent horizontal bouncing on touchpads & mobile */
   overscroll-behavior-x: none;
+}
+
+/* Elegant custom desktop scrollbars matching the powder blue aesthetic */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: #f4f8fc;
+}
+::-webkit-scrollbar-thumb {
+  background: #cbdceb;
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #5b768e;
 }
 
 /* --------------------------------------------------------------------------
@@ -60,4 +85,27 @@ button, a, input, select, textarea {
 
 .font-script {
   font-family: 'Great Vibes', cursive;
+}
+
+/* --------------------------------------------------------------------------
+   DESKTOP WEB PRINT STYLESHEET (Clean printing for schedules & checklists)
+   -------------------------------------------------------------------------- */
+@media print {
+  nav,
+  header button,
+  .no-print,
+  .fixed,
+  button {
+    display: none !important;
+  }
+  body, #root {
+    background: #ffffff !important;
+    color: #111827 !important;
+  }
+  .shadow-2xs, .shadow-xs, .shadow-sm, .shadow-md, .shadow-lg, .shadow-xl, .shadow-2xl {
+    box-shadow: none !important;
+  }
+  .border, .border-powder-200, .border-powder-300 {
+    border-color: #e2e8f0 !important;
+  }
 }

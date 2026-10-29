@@ -219,6 +219,7 @@ export default function App() {
   const [isStandaloneApp, setIsStandaloneApp] = useState(false);
   const [showMobileBanner, setShowMobileBanner] = useState(true);
   const [isIos, setIsIos] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
 
   useEffect(() => {
     // Check if app is running as installed PWA
@@ -228,6 +229,10 @@ export default function App() {
     // Detect iPhone / iPad
     const iosDetected = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
     setIsIos(iosDetected);
+
+    // Detect general mobile devices
+    const mobileDetected = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+    setIsMobile(mobileDetected);
 
     // Android / Desktop PWA install trigger
     const onBeforeInstall = (e) => {
@@ -348,6 +353,28 @@ export default function App() {
       chatEndRef.current.scrollIntoView({ behavior: 'smooth' });
     }
   }, [messages, activeTab]);
+
+  // Desktop Web: Dismiss open modals on Escape key press
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape') {
+        setShowProfileModal(false);
+        setShowBridesmaidModal(null);
+        setShowEditWeddingModal(false);
+        setShowEditDressModal(false);
+        setShowEditHotelModal(false);
+        setShowNewPollModal(false);
+        setShowEditPollModal(null);
+        setShowNewTaskModal(false);
+        setShowEditTaskModal(null);
+        setShowPhotoModal(false);
+        setShowInvitationModal(false);
+        setShowCloudConfigModal(false);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
 
   const allProfiles = [
     { id: brideProfile.id, name: brideProfile.name, role: brideProfile.role, isBride: true, isAdmin: true },
@@ -605,23 +632,27 @@ export default function App() {
     /* WIDE-SCREEN RESPONSIVE CONTAINER WITH MOBILE SAFE AREA INSETS */
     <div className="w-full max-w-6xl mx-auto min-h-screen px-3 sm:px-6 lg:px-8 pt-3 sm:pt-4 pb-28 safe-bottom safe-top">
       
-      {/* Mobile Install Tip / PWA Action Bar (iPhone & Android) */}
+      {/* Install Tip / PWA Action Bar (Desktop, iPhone & Android) */}
       {!isStandaloneApp && showMobileBanner && (
-        <div className="mb-3.5 p-3 rounded-2xl bg-gradient-to-r from-powder-100 via-white to-powder-100 border border-powder-300 shadow-xs flex items-center justify-between gap-2.5">
+        <div className="no-print mb-3.5 p-3 rounded-2xl bg-gradient-to-r from-powder-100 via-white to-powder-100 border border-powder-300 shadow-xs flex items-center justify-between gap-2.5">
           <div className="flex items-center gap-2 min-w-0">
-            <span className="text-xl flex-shrink-0">📲</span>
+            <span className="text-xl flex-shrink-0">{deferredPrompt ? '💻' : isMobile ? '📲' : '🔖'}</span>
             <p className="text-xs text-powder-900 font-medium leading-tight">
-              {isIos ? (
+              {deferredPrompt ? (
+                <span>
+                  <strong>Install Hub App:</strong> Install directly to your desktop or device for fast full-screen access!
+                </span>
+              ) : isIos ? (
                 <span>
                   <strong>Install on iPhone:</strong> Tap the Share button <span className="inline-block px-1 bg-white border border-powder-300 rounded text-[11px] font-bold">⬆</span> ➔ <strong>"Add to Home Screen"</strong>
                 </span>
-              ) : deferredPrompt ? (
+              ) : isMobile ? (
                 <span>
-                  <strong>Install App:</strong> Add to Home Screen for 1-tap full-screen access!
+                  <strong>Mobile Tip:</strong> Tap your browser menu (⋮) ➔ <strong>"Add to Home Screen"</strong> to use as an app!
                 </span>
               ) : (
                 <span>
-                  <strong>Mobile Tip:</strong> Tap your browser menu (⋮) ➔ <strong>"Add to Home Screen"</strong> to use as an app!
+                  <strong>Desktop Tip:</strong> Bookmark this link (<kbd className="px-1.5 py-0.5 bg-white border border-powder-300 rounded font-mono text-[10px]">Ctrl+D</kbd>) for instant access!
                 </span>
               )}
             </p>
@@ -745,6 +776,8 @@ export default function App() {
                 <img 
                   src={weddingDetails.photoUrl} 
                   alt="Adrianna & Thomas" 
+                  fetchPriority="high"
+                  decoding="async"
                   className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-500 cursor-pointer"
                   onClick={() => setShowPhotoModal(true)}
                   onError={(e) => {
@@ -881,7 +914,7 @@ export default function App() {
       {/* =========================================================================
           RESPONSIVE NAVIGATION TABS (Wide & Spacious)
          ========================================================================= */}
-      <nav className="mb-6 max-w-3xl mx-auto bg-white/90 backdrop-blur-md p-2 rounded-2xl border border-powder-200/90 shadow-xs grid grid-cols-5 text-center gap-2">
+      <nav className="no-print sticky top-2 sm:top-3 z-30 mb-6 max-w-3xl mx-auto bg-white/95 backdrop-blur-md p-2 rounded-2xl border border-powder-200/90 shadow-sm grid grid-cols-5 text-center gap-2 transition-all">
         <button
           onClick={() => setActiveTab('dresses')}
           className={`py-2.5 px-2 text-xs sm:text-sm font-semibold rounded-xl transition-all ${
@@ -1821,7 +1854,7 @@ export default function App() {
           MODAL 1: VIEW OFFICIAL INVITATION (EDITABLE BY BRIDE & PAYTON)
          ========================================================================= */}
       {showInvitationModal && (
-        <div className="fixed inset-0 z-50 bg-powder-950/40 backdrop-blur-sm flex items-center justify-center p-4">
+        <div onClick={(e) => { if (e.target === e.currentTarget) setShowInvitationModal(false); }} className="fixed inset-0 z-50 bg-powder-950/40 backdrop-blur-sm flex items-center justify-center p-4">
           <div className="bg-white rounded-3xl max-w-md w-full p-5 shadow-2xl border border-powder-200 space-y-4 animate-in fade-in zoom-in-95 duration-200 max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between">
               <h3 className="text-lg font-bold font-serif text-powder-900">
@@ -1866,7 +1899,7 @@ export default function App() {
           MODAL 2: COUPLE PHOTO (EDITABLE BY BRIDE & PAYTON)
          ========================================================================= */}
       {showPhotoModal && (
-        <div className="fixed inset-0 z-50 bg-powder-950/40 backdrop-blur-sm flex items-center justify-center p-4">
+        <div onClick={(e) => { if (e.target === e.currentTarget) setShowPhotoModal(false); }} className="fixed inset-0 z-50 bg-powder-950/40 backdrop-blur-sm flex items-center justify-center p-4">
           <div className="bg-white rounded-3xl max-w-md w-full p-5 shadow-2xl border border-powder-200 space-y-4 animate-in fade-in zoom-in-95 duration-200 max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between">
               <h3 className="text-lg font-bold font-serif text-powder-900">
@@ -1913,7 +1946,7 @@ export default function App() {
           MODAL: EDIT WEDDING DETAILS (EDITABLE BY BRIDE & PAYTON)
          ========================================================================= */}
       {showEditWeddingModal && isAdmin && (
-        <div className="fixed inset-0 z-50 bg-powder-950/40 backdrop-blur-sm flex items-center justify-center p-4">
+        <div onClick={(e) => { if (e.target === e.currentTarget) setShowEditWeddingModal(false); }} className="fixed inset-0 z-50 bg-powder-950/40 backdrop-blur-sm flex items-center justify-center p-4">
           <div className="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-powder-200 space-y-3.5 animate-in fade-in zoom-in-95 duration-200 max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between">
               <h3 className="text-lg font-bold font-serif text-powder-900">
@@ -1988,7 +2021,7 @@ export default function App() {
           MODAL 3: WHO IS VIEWING / PROFILE SELECTION
          ========================================================================= */}
       {showProfileModal && (
-        <div className="fixed inset-0 z-50 bg-powder-950/40 backdrop-blur-sm flex items-center justify-center p-4">
+        <div onClick={(e) => { if (e.target === e.currentTarget) setShowProfileModal(false); }} className="fixed inset-0 z-50 bg-powder-950/40 backdrop-blur-sm flex items-center justify-center p-4">
           <div className="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-powder-200 space-y-4 animate-in fade-in zoom-in-95 duration-200 max-h-[90vh] overflow-y-auto">
             <div className="text-center">
               <div className="w-14 h-14 mx-auto rounded-full bg-powder-100 border border-powder-200 flex items-center justify-center text-3xl shadow-inner mb-2">
@@ -2103,7 +2136,7 @@ export default function App() {
           MODAL 4: EDIT BRIDESMAID / MEMBER (EDITABLE BY BRIDE & PAYTON)
          ========================================================================= */}
       {showBridesmaidModal && (
-        <div className="fixed inset-0 z-50 bg-powder-950/40 backdrop-blur-sm flex items-center justify-center p-4">
+        <div onClick={(e) => { if (e.target === e.currentTarget) setShowBridesmaidModal(null); }} className="fixed inset-0 z-50 bg-powder-950/40 backdrop-blur-sm flex items-center justify-center p-4">
           <div className="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-powder-200 space-y-3.5 animate-in fade-in zoom-in-95 duration-200 max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between">
               <h3 className="text-lg font-bold font-serif text-powder-900">
@@ -2229,7 +2262,7 @@ export default function App() {
           MODAL 5: EDIT DRESS REQUIREMENTS (EDITABLE BY BRIDE & PAYTON)
          ========================================================================= */}
       {showEditDressModal && isAdmin && (
-        <div className="fixed inset-0 z-50 bg-powder-950/40 backdrop-blur-sm flex items-center justify-center p-4">
+        <div onClick={(e) => { if (e.target === e.currentTarget) setShowEditDressModal(false); }} className="fixed inset-0 z-50 bg-powder-950/40 backdrop-blur-sm flex items-center justify-center p-4">
           <div className="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-powder-200 space-y-3.5 animate-in fade-in zoom-in-95 duration-200 max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between">
               <h3 className="text-lg font-bold font-serif text-powder-900">
@@ -2290,7 +2323,7 @@ export default function App() {
           MODAL 6: EDIT HOTEL INFO (EDITABLE BY BRIDE & PAYTON)
          ========================================================================= */}
       {showEditHotelModal && isAdmin && (
-        <div className="fixed inset-0 z-50 bg-powder-950/40 backdrop-blur-sm flex items-center justify-center p-4">
+        <div onClick={(e) => { if (e.target === e.currentTarget) setShowEditHotelModal(false); }} className="fixed inset-0 z-50 bg-powder-950/40 backdrop-blur-sm flex items-center justify-center p-4">
           <div className="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-powder-200 space-y-3.5 animate-in fade-in zoom-in-95 duration-200 max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between">
               <h3 className="text-lg font-bold font-serif text-powder-900">
@@ -2359,7 +2392,7 @@ export default function App() {
           MODAL 7: CREATE NEW POLL
          ========================================================================= */}
       {showNewPollModal && (
-        <div className="fixed inset-0 z-50 bg-powder-950/40 backdrop-blur-sm flex items-center justify-center p-4">
+        <div onClick={(e) => { if (e.target === e.currentTarget) setShowNewPollModal(false); }} className="fixed inset-0 z-50 bg-powder-950/40 backdrop-blur-sm flex items-center justify-center p-4">
           <div className="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-powder-200 space-y-3.5 animate-in fade-in zoom-in-95 duration-200">
             <div className="flex items-center justify-between">
               <h3 className="text-lg font-bold font-serif text-powder-900">
@@ -2429,7 +2462,7 @@ export default function App() {
           MODAL: EDIT BRIDAL POLL (EDITABLE BY BRIDE & PAYTON)
          ========================================================================= */}
       {showEditPollModal && isAdmin && (
-        <div className="fixed inset-0 z-50 bg-powder-950/40 backdrop-blur-sm flex items-center justify-center p-4">
+        <div onClick={(e) => { if (e.target === e.currentTarget) setShowEditPollModal(null); }} className="fixed inset-0 z-50 bg-powder-950/40 backdrop-blur-sm flex items-center justify-center p-4">
           <div className="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-powder-200 space-y-3.5 animate-in fade-in zoom-in-95 duration-200 max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between">
               <h3 className="text-lg font-bold font-serif text-powder-900">
@@ -2524,7 +2557,7 @@ export default function App() {
           MODAL 8: CREATE NEW TASK (EDITABLE BY BRIDE & PAYTON)
          ========================================================================= */}
       {showNewTaskModal && isAdmin && (
-        <div className="fixed inset-0 z-50 bg-powder-950/40 backdrop-blur-sm flex items-center justify-center p-4">
+        <div onClick={(e) => { if (e.target === e.currentTarget) setShowNewTaskModal(false); }} className="fixed inset-0 z-50 bg-powder-950/40 backdrop-blur-sm flex items-center justify-center p-4">
           <div className="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-powder-200 space-y-3.5 animate-in fade-in zoom-in-95 duration-200">
             <div className="flex items-center justify-between">
               <h3 className="text-lg font-bold font-serif text-powder-900">
@@ -2587,7 +2620,7 @@ export default function App() {
           MODAL 9: EDIT CHECKLIST TASK (EDITABLE BY BRIDE & PAYTON)
          ========================================================================= */}
       {showEditTaskModal && isAdmin && (
-        <div className="fixed inset-0 z-50 bg-powder-950/40 backdrop-blur-sm flex items-center justify-center p-4">
+        <div onClick={(e) => { if (e.target === e.currentTarget) setShowEditTaskModal(null); }} className="fixed inset-0 z-50 bg-powder-950/40 backdrop-blur-sm flex items-center justify-center p-4">
           <div className="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-powder-200 space-y-3.5 animate-in fade-in zoom-in-95 duration-200">
             <div className="flex items-center justify-between">
               <h3 className="text-lg font-bold font-serif text-powder-900">
@@ -2666,7 +2699,7 @@ export default function App() {
           LIVE REAL-TIME CLOUD SYNC CONFIGURATION MODAL
          ========================================================================= */}
       {showCloudConfigModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-xs">
+        <div onClick={(e) => { if (e.target === e.currentTarget) setShowCloudConfigModal(false); }} className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-xs">
           <div className="bg-white rounded-3xl max-w-lg w-full p-6 shadow-xl border border-powder-200 max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between pb-3 border-b border-powder-100">
               <div className="flex items-center gap-2">

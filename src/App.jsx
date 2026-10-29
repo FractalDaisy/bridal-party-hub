@@ -213,6 +213,49 @@ export default function App() {
       pinnedNote
     });
   }, [brideProfile, bridesmaids, weddingDetails, dressReq, hotel, tasks, polls, messages, pinnedNote, cloudStatus]);
+
+  // Mobile PWA Install Prompt & Device Detection (iOS Safari & Android Chrome)
+  const [deferredPrompt, setDeferredPrompt] = useState(null);
+  const [isStandaloneApp, setIsStandaloneApp] = useState(false);
+  const [showMobileBanner, setShowMobileBanner] = useState(true);
+  const [isIos, setIsIos] = useState(false);
+
+  useEffect(() => {
+    // Check if app is running as installed PWA
+    const standalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+    setIsStandaloneApp(standalone);
+
+    // Detect iPhone / iPad
+    const iosDetected = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+    setIsIos(iosDetected);
+
+    // Android / Desktop PWA install trigger
+    const onBeforeInstall = (e) => {
+      e.preventDefault();
+      setDeferredPrompt(e);
+    };
+
+    window.addEventListener('beforeinstallprompt', onBeforeInstall);
+    window.addEventListener('appinstalled', () => {
+      setIsStandaloneApp(true);
+      setDeferredPrompt(null);
+    });
+
+    return () => {
+      window.removeEventListener('beforeinstallprompt', onBeforeInstall);
+    };
+  }, []);
+
+  const handleInstallClick = async () => {
+    if (deferredPrompt) {
+      deferredPrompt.prompt();
+      const { outcome } = await deferredPrompt.userChoice;
+      if (outcome === 'accepted') {
+        setIsStandaloneApp(true);
+      }
+      setDeferredPrompt(null);
+    }
+  };
   useEffect(() => {
     localStorage.setItem('bridal_v7_bride', JSON.stringify(brideProfile));
   }, [brideProfile]);
@@ -515,9 +558,51 @@ export default function App() {
   };
 
   return (
-    /* WIDE-SCREEN RESPONSIVE CONTAINER: Utilizes the entire screen beautifully */
-    <div className="w-full max-w-6xl mx-auto min-h-screen px-4 sm:px-6 lg:px-8 pt-4 pb-24">
+    /* WIDE-SCREEN RESPONSIVE CONTAINER WITH MOBILE SAFE AREA INSETS */
+    <div className="w-full max-w-6xl mx-auto min-h-screen px-3 sm:px-6 lg:px-8 pt-3 sm:pt-4 pb-28 safe-bottom safe-top">
       
+      {/* Mobile Install Tip / PWA Action Bar (iPhone & Android) */}
+      {!isStandaloneApp && showMobileBanner && (
+        <div className="mb-3.5 p-3 rounded-2xl bg-gradient-to-r from-powder-100 via-white to-powder-100 border border-powder-300 shadow-xs flex items-center justify-between gap-2.5">
+          <div className="flex items-center gap-2 min-w-0">
+            <span className="text-xl flex-shrink-0">📲</span>
+            <p className="text-xs text-powder-900 font-medium leading-tight">
+              {isIos ? (
+                <span>
+                  <strong>Install on iPhone:</strong> Tap the Share button <span className="inline-block px-1 bg-white border border-powder-300 rounded text-[11px] font-bold">⬆</span> ➔ <strong>"Add to Home Screen"</strong>
+                </span>
+              ) : deferredPrompt ? (
+                <span>
+                  <strong>Install App:</strong> Add to Home Screen for 1-tap full-screen access!
+                </span>
+              ) : (
+                <span>
+                  <strong>Mobile Tip:</strong> Tap your browser menu (⋮) ➔ <strong>"Add to Home Screen"</strong> to use as an app!
+                </span>
+              )}
+            </p>
+          </div>
+
+          <div className="flex items-center gap-1.5 flex-shrink-0">
+            {deferredPrompt && (
+              <button
+                onClick={handleInstallClick}
+                className="px-3 py-1 bg-powder-600 hover:bg-powder-700 text-white text-xs font-bold rounded-xl shadow-xs"
+              >
+                Install
+              </button>
+            )}
+            <button
+              onClick={() => setShowMobileBanner(false)}
+              className="w-6 h-6 rounded-full bg-powder-200/70 hover:bg-powder-300 text-powder-800 flex items-center justify-center text-xs font-bold"
+              aria-label="Dismiss banner"
+            >
+              ✕
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Top Profile Banner & Identification Ribbon (Full Width) */}
       <header className="mb-6 bg-white/85 backdrop-blur-md border border-powder-200/90 rounded-2xl p-3 sm:px-5 shadow-sm flex items-center justify-between">
         <div className="flex items-center space-x-3">

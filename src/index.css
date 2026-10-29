@@ -1,16 +1,63 @@
-@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Great+Vibes&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-body {
-  font-family: 'Plus Jakarta Sans', sans-serif;
+:root {
+  --sat: env(safe-area-inset-top, 0px);
+  --sab: env(safe-area-inset-bottom, 0px);
+  --sal: env(safe-area-inset-left, 0px);
+  --sar: env(safe-area-inset-right, 0px);
+}
+
+html, body {
+  font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   background-color: #fcf9f9;
   color: #2d2627;
   -webkit-tap-highlight-color: transparent;
+  /* Prevent horizontal bouncing on mobile */
+  overscroll-behavior-x: none;
+}
+
+/* --------------------------------------------------------------------------
+   CRITICAL MOBILE FIX: Prevent iOS Safari from auto-zooming on input focus
+   -------------------------------------------------------------------------- */
+@media screen and (max-width: 768px) {
+  input[type="text"],
+  input[type="password"],
+  input[type="email"],
+  input[type="tel"],
+  input[type="number"],
+  select,
+  textarea {
+    font-size: 16px !important;
+  }
+}
+
+/* Fast tap response & touch optimization */
+button, a, input, select, textarea {
+  touch-action: manipulation;
+}
+
+/* Smooth momentum scrolling on iOS Safari */
+.overflow-y-auto, .overflow-x-auto, div {
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Safe area padding utilities for iPhone home indicator & notches */
+.safe-bottom {
+  padding-bottom: max(1.5rem, calc(env(safe-area-inset-bottom) + 1rem));
+}
+
+.safe-top {
+  padding-top: max(0.75rem, env(safe-area-inset-top));
 }
 
 .font-serif-heading {
   font-family: 'Cormorant Garamond', Georgia, serif;
+}
+
+.font-script {
+  font-family: 'Great Vibes', cursive;
 }

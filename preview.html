@@ -1841,66 +1841,314 @@
                 </div>
 
                 <form onSubmit={(e) => {
-              e.preventDefault();
-              const form = e.target;
-              if (showBridesmaidModal.isNew) {
-                const nameVal = form.name?.value?.trim() || 'New Bridesmaid';
-                const roleVal = form.role?.value?.trim() || 'Bridesmaid';
-                const phoneVal = form.phone?.value?.trim() || '';
-                const dressStatusVal = form.dressStatus?.value || 'Not Ordered';
-                const roommateVal = form.hotelRoommate?.value?.trim() || 'TBD';
-                const isPaytonName = nameVal.toLowerCase().includes('payton') || nameVal.toLowerCase().includes('rain');
-                const newBm = {
-                  id: 'bm-' + Date.now(),
-                  name: nameVal,
-                  role: roleVal,
-                  phone: phoneVal,
-                  dressStatus: dressStatusVal,
-                  hotelRoommate: roommateVal,
-                  hotelNights: 'Fri - Sun',
-                  hotelBooked: false,
-                  isBride: false,
-                  isAdmin: isPaytonName
-                };
-                setBridesmaids([...bridesmaids, newBm]);
-                if (typeof showToast === 'function') showToast(`Added ${nameVal} to bridal party! ✨`);
-              } else if (showBridesmaidModal.isBrideProfile) {
-                const brideName = form.name?.value?.trim() || brideProfile.name;
-                const brideRole = form.role?.value?.trim() || brideProfile.role;
-                const bridePhone = form.phone?.value?.trim() || brideProfile.phone;
-                setBrideProfile({
-                  ...brideProfile,
-                  name: brideName,
-                  role: brideRole,
-                  phone: bridePhone
-                });
-                if (typeof showToast === 'function') showToast('Bride profile updated! 👰✨');
-              } else {
-                setBridesmaids(bridesmaids.map(b => {
-                  if (b.id !== showBridesmaidModal.id) return b;
-                  const updatedName = form.name?.value?.trim() || b.name;
-                  const updatedRole = form.role?.value?.trim() || b.role;
-                  const updatedPhone = form.phone?.value?.trim() || b.phone;
-                  const updatedDressStatus = form.dressStatus?.value || b.dressStatus || 'Not Ordered';
-                  const updatedRoommate = form.hotelRoommate?.value?.trim() || b.hotelRoommate || 'TBD';
-                  const isPayton = updatedName.toLowerCase().includes('payton') || updatedName.toLowerCase().includes('rain') || b.isAdmin;
-                  return {
-                    ...b,
-                    name: updatedName,
-                    role: updatedRole,
-                    phone: updatedPhone,
-                    dressStatus: updatedDressStatus,
-                    hotelRoommate: updatedRoommate,
-                    isAdmin: isPayton
+                  e.preventDefault();
+                  const form = e.target;
+                  const updated = {
+                    ...weddingDetails,
+                    bride: form.bride.value.trim(),
+                    groom: form.groom.value.trim(),
+                    dateFormatted: form.dateFormatted.value.trim(),
+                    timeFormatted: form.timeFormatted.value.trim(),
+                    venueAddress: form.venueAddress.value.trim(),
+                    cityStateZip: form.cityStateZip.value.trim(),
+                    quote: form.quote.value.trim()
                   };
-                }));
-                if (typeof showToast === 'function') showToast(`Updated ${showBridesmaidModal.name}! ✨`);
-              }
-              setShowBridesmaidModal(null);
-            }} className="space-y-3 text-xs sm:text-sm">
-              
-              {isAdmin || currentUser?.id === showBridesmaidModal.id || !currentUser ? (
-                <>
+                  setWeddingDetails(updated);
+                  localStorage.setItem('bridal_v7_wedding', JSON.stringify(updated));
+                  syncHubToCloud({
+                    brideProfile,
+                    bridesmaids,
+                    weddingDetails: updated,
+                    dressReq,
+                    hotel,
+                    tasks,
+                    polls,
+                    messages,
+                    pinnedNote
+                  });
+                  setShowEditWeddingModal(false);
+                  if (typeof showToast === 'function') showToast('Wedding details updated! 💍✨');
+                }} className="space-y-3 text-xs sm:text-sm">
+                  <div className="grid grid-cols-2 gap-2">
+                    <div>
+                      <label className="text-[10px] uppercase font-semibold text-powder-700">Bride Name</label>
+                      <input name="bride" defaultValue={weddingDetails.bride} required className="w-full px-3 py-2 rounded-xl border border-powder-200 bg-white" />
+                    </div>
+                    <div>
+                      <label className="text-[10px] uppercase font-semibold text-powder-700">Groom Name</label>
+                      <input name="groom" defaultValue={weddingDetails.groom} required className="w-full px-3 py-2 rounded-xl border border-powder-200 bg-white" />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="text-[10px] uppercase font-semibold text-powder-700">Wedding Date</label>
+                    <input name="dateFormatted" defaultValue={weddingDetails.dateFormatted} required className="w-full px-3 py-2 rounded-xl border border-powder-200 bg-white" />
+                  </div>
+
+                  <div>
+                    <label className="text-[10px] uppercase font-semibold text-powder-700">Wedding Time</label>
+                    <input name="timeFormatted" defaultValue={weddingDetails.timeFormatted} required className="w-full px-3 py-2 rounded-xl border border-powder-200 bg-white" />
+                  </div>
+
+                  <div>
+                    <label className="text-[10px] uppercase font-semibold text-powder-700">Venue Address</label>
+                    <input name="venueAddress" defaultValue={weddingDetails.venueAddress} required className="w-full px-3 py-2 rounded-xl border border-powder-200 bg-white" />
+                  </div>
+
+                  <div>
+                    <label className="text-[10px] uppercase font-semibold text-powder-700">City, State & Zip</label>
+                    <input name="cityStateZip" defaultValue={weddingDetails.cityStateZip} required className="w-full px-3 py-2 rounded-xl border border-powder-200 bg-white" />
+                  </div>
+
+                  <div>
+                    <label className="text-[10px] uppercase font-semibold text-powder-700">Couple Quote</label>
+                    <textarea name="quote" defaultValue={weddingDetails.quote} rows="2" className="w-full px-3 py-2 rounded-xl border border-powder-200 bg-white" />
+                  </div>
+
+                  <button
+                    type="submit"
+                    className="w-full py-2.5 bg-powder-500 hover:bg-powder-600 text-white font-semibold rounded-2xl shadow-xs cursor-pointer"
+                  >
+                    Save Wedding Info
+                  </button>
+                </form>
+              </div>
+            </div>
+          )}
+
+          {/* =========================================================================
+              MODAL 3: WHO IS VIEWING / PROFILE SELECTION
+             ========================================================================= */}
+          {showProfileModal && (
+            <div className="fixed inset-0 z-50 bg-powder-950/40 backdrop-blur-sm flex items-center justify-center p-4">
+              <div className="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-powder-200 space-y-4 animate-in fade-in zoom-in-95 duration-200 max-h-[90vh] overflow-y-auto">
+                <div className="text-center">
+                  <div className="w-14 h-14 mx-auto rounded-full bg-powder-100 border border-powder-200 flex items-center justify-center text-3xl shadow-inner mb-2">
+                    🪞
+                  </div>
+                  <h3 className="text-xl font-bold font-serif-heading text-powder-900">
+                    Who is viewing? ✨
+                  </h3>
+                  <p className="text-xs sm:text-sm text-powder-600 mt-1">
+                    {profilePromptReason || 'Select your bridal party profile to personalize your votes, dress tracking, and chat:'}
+                  </p>
+                </div>
+
+                <div className="space-y-2.5 max-h-64 overflow-y-auto pr-1">
+                  {allProfiles.map((p) => {
+                    const isSelected = currentUser?.id === p.id;
+                    return (
+                      <div
+                        key={p.id}
+                        onClick={() => handleSelectProfile(p)}
+                        className={`p-3.5 rounded-2xl border flex items-center justify-between cursor-pointer transition-all ${
+                          isSelected 
+                            ? 'bg-powder-100 border-powder-400 ring-2 ring-powder-300' 
+                            : 'bg-white hover:bg-powder-50 border-powder-200'
+                        }`}
+                      >
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 rounded-full bg-powder-200 flex items-center justify-center text-base font-bold text-powder-800">
+                            {p.isBride ? '👰' : p.name.toLowerCase().includes('payton') ? '💎' : '🩵'}
+                          </div>
+                          <div>
+                            <div className="text-sm font-bold text-powder-900 flex items-center gap-1.5">
+                              <span>{p.name}</span>
+                              {p.isAdmin && <span className="text-[10px] bg-powder-200 text-powder-800 px-1.5 py-0.5 rounded font-semibold">Admin</span>}
+                            </div>
+                            <div className="text-xs text-powder-600">{p.role}</div>
+                          </div>
+                        </div>
+                        {isSelected && (
+                          <span className="text-xs font-bold text-powder-600">✓ Active</span>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+
+                {!showNewMemberForm ? (
+                  <button
+                    onClick={() => setShowNewMemberForm(true)}
+                    className="w-full py-2.5 bg-powder-50 hover:bg-powder-100 text-powder-700 text-xs sm:text-sm font-semibold rounded-2xl border border-dashed border-powder-300 transition-all flex items-center justify-center gap-1.5 cursor-pointer"
+                  >
+                    <span>+ I am a new Bridesmaid</span>
+                  </button>
+                ) : (
+                  <form onSubmit={handleCreateNewMemberProfile} className="p-3.5 rounded-2xl bg-powder-50 border border-powder-200 space-y-2.5 text-xs sm:text-sm">
+                    <div className="font-semibold text-powder-900">Add yourself to the party:</div>
+                    <input
+                      type="text"
+                      placeholder="Your First & Last Name"
+                      value={newMemberName}
+                      onChange={(e) => setNewMemberName(e.target.value)}
+                      className="w-full px-3.5 py-2 rounded-xl border border-powder-200 bg-white"
+                      required
+                    />
+                    <div className="grid grid-cols-2 gap-2">
+                      <input
+                        type="text"
+                        placeholder="Role (e.g. Bridesmaid)"
+                        value={newMemberRole}
+                        onChange={(e) => setNewMemberRole(e.target.value)}
+                        className="w-full px-3 py-2 rounded-xl border border-powder-200 bg-white"
+                      />
+                      <input
+                        type="text"
+                        placeholder="Phone (optional)"
+                        value={newMemberPhone}
+                        onChange={(e) => setNewMemberPhone(e.target.value)}
+                        className="w-full px-3 py-2 rounded-xl border border-powder-200 bg-white"
+                      />
+                    </div>
+                    <div className="flex gap-2 pt-1">
+                      <button
+                        type="submit"
+                        className="flex-1 py-2 bg-powder-500 text-white rounded-xl font-semibold cursor-pointer"
+                      >
+                        Join & Select Profile
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setShowNewMemberForm(false)}
+                        className="px-3 py-2 bg-white text-powder-700 rounded-xl border border-powder-200 cursor-pointer"
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  </form>
+                )}
+
+                <div className="flex items-center justify-between pt-1">
+                  <button
+                    onClick={() => setShowProfileModal(false)}
+                    className="text-xs text-powder-500 hover:underline mx-auto cursor-pointer"
+                  >
+                    Close & Keep Current
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* =========================================================================
+              MODAL 4: EDIT BRIDESMAID / MEMBER (OPEN TO EDIT DIRECTORY)
+             ========================================================================= */}
+          {showBridesmaidModal && (
+            <div className="fixed inset-0 z-50 bg-powder-950/40 backdrop-blur-sm flex items-center justify-center p-4">
+              <div className="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-powder-200 space-y-3.5 animate-in fade-in zoom-in-95 duration-200 max-h-[90vh] overflow-y-auto">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-lg font-bold font-serif-heading text-powder-900">
+                    {showBridesmaidModal.isNew 
+                      ? 'Add Bridesmaid' 
+                      : showBridesmaidModal.isBrideProfile 
+                        ? 'Edit Bride Profile' 
+                        : `Edit ${showBridesmaidModal.name}`}
+                  </h3>
+                  <button onClick={() => setShowBridesmaidModal(null)} className="text-powder-400 hover:text-powder-700 text-base">✕</button>
+                </div>
+
+                <form
+                  key={showBridesmaidModal.id || (showBridesmaidModal.isNew ? 'new' : 'bride')}
+                  onSubmit={(e) => {
+                    e.preventDefault();
+                    const form = e.target;
+                    if (showBridesmaidModal.isNew) {
+                      const nameVal = form.name?.value?.trim() || 'New Bridesmaid';
+                      const roleVal = form.role?.value?.trim() || 'Bridesmaid';
+                      const phoneVal = form.phone?.value?.trim() || '';
+                      const dressStatusVal = form.dressStatus?.value || 'Not Ordered';
+                      const roommateVal = form.hotelRoommate?.value?.trim() || 'TBD';
+                      const isPaytonName = nameVal.toLowerCase().includes('payton') || nameVal.toLowerCase().includes('rain');
+                      const newBm = {
+                        id: 'bm-' + Date.now(),
+                        name: nameVal,
+                        role: roleVal,
+                        phone: phoneVal,
+                        dressStatus: dressStatusVal,
+                        hotelRoommate: roommateVal,
+                        hotelNights: 'Fri - Sun',
+                        hotelBooked: false,
+                        isBride: false,
+                        isAdmin: isPaytonName
+                      };
+                      const updatedList = [...bridesmaids, newBm];
+                      setBridesmaids(updatedList);
+                      localStorage.setItem('bridal_v7_bridesmaids', JSON.stringify(updatedList));
+                      syncHubToCloud({
+                        brideProfile,
+                        bridesmaids: updatedList,
+                        weddingDetails,
+                        dressReq,
+                        hotel,
+                        tasks,
+                        polls,
+                        messages,
+                        pinnedNote
+                      });
+                      if (typeof showToast === 'function') showToast(`Added ${nameVal} to bridal party! ✨`);
+                    } else if (showBridesmaidModal.isBrideProfile) {
+                      const brideName = form.name?.value?.trim() || brideProfile.name;
+                      const brideRole = form.role?.value?.trim() || brideProfile.role;
+                      const bridePhone = form.phone?.value?.trim() || brideProfile.phone;
+                      const updatedBride = {
+                        ...brideProfile,
+                        name: brideName,
+                        role: brideRole,
+                        phone: bridePhone
+                      };
+                      setBrideProfile(updatedBride);
+                      localStorage.setItem('bridal_v7_bride', JSON.stringify(updatedBride));
+                      syncHubToCloud({
+                        brideProfile: updatedBride,
+                        bridesmaids,
+                        weddingDetails,
+                        dressReq,
+                        hotel,
+                        tasks,
+                        polls,
+                        messages,
+                        pinnedNote
+                      });
+                      if (typeof showToast === 'function') showToast('Bride profile updated! 👰✨');
+                    } else {
+                      const updatedList = bridesmaids.map(b => {
+                        if (b.id !== showBridesmaidModal.id) return b;
+                        const updatedName = form.name?.value?.trim() || b.name;
+                        const updatedRole = form.role?.value?.trim() || b.role;
+                        const updatedPhone = form.phone?.value?.trim() || b.phone;
+                        const updatedDressStatus = form.dressStatus?.value || b.dressStatus || 'Not Ordered';
+                        const updatedRoommate = form.hotelRoommate?.value?.trim() || b.hotelRoommate || 'TBD';
+                        const isPayton = updatedName.toLowerCase().includes('payton') || updatedName.toLowerCase().includes('rain') || b.isAdmin;
+                        return {
+                          ...b,
+                          name: updatedName,
+                          role: updatedRole,
+                          phone: updatedPhone,
+                          dressStatus: updatedDressStatus,
+                          hotelRoommate: updatedRoommate,
+                          isAdmin: isPayton
+                        };
+                      });
+                      setBridesmaids(updatedList);
+                      localStorage.setItem('bridal_v7_bridesmaids', JSON.stringify(updatedList));
+                      syncHubToCloud({
+                        brideProfile,
+                        bridesmaids: updatedList,
+                        weddingDetails,
+                        dressReq,
+                        hotel,
+                        tasks,
+                        polls,
+                        messages,
+                        pinnedNote
+                      });
+                      if (typeof showToast === 'function') showToast(`Updated ${showBridesmaidModal.name}! ✨`);
+                    }
+                    setShowBridesmaidModal(null);
+                  }}
+                  className="space-y-3 text-xs sm:text-sm"
+                >
                   <div>
                     <label className="text-[10px] uppercase font-semibold text-powder-700">Full Name</label>
                     <input name="name" defaultValue={showBridesmaidModal.name || ''} required className="w-full px-3 py-2 rounded-xl border border-powder-200 bg-white" />
@@ -1915,13 +2163,6 @@
                       <input name="phone" defaultValue={showBridesmaidModal.phone || ''} placeholder="(555) 000-0000" className="w-full px-3 py-2 rounded-xl border border-powder-200 bg-white" />
                     </div>
                   </div>
-                </>
-              ) : (
-                <div className="bg-powder-50 p-3 rounded-xl border border-powder-200">
-                  <div className="font-bold text-powder-900">{showBridesmaidModal.name}</div>
-                  <div className="text-xs text-powder-600">{showBridesmaidModal.role}</div>
-                </div>
-              )}
 
                   {!showBridesmaidModal.isBrideProfile && (
                     <>
@@ -1945,20 +2186,34 @@
                   <div className="flex gap-2 pt-2">
                     <button
                       type="submit"
-                      className="flex-1 py-2.5 bg-powder-500 hover:bg-powder-600 text-white font-semibold rounded-2xl shadow-xs"
+                      className="flex-1 py-2.5 bg-powder-500 hover:bg-powder-600 text-white font-semibold rounded-2xl shadow-xs cursor-pointer"
                     >
                       Save Changes
                     </button>
-                    {isAdmin && !showBridesmaidModal.isNew && !showBridesmaidModal.isBrideProfile && (
+                    {!showBridesmaidModal.isNew && !showBridesmaidModal.isBrideProfile && (
                       <button
                         type="button"
                         onClick={() => {
                           if (confirm(`Remove ${showBridesmaidModal.name} from directory?`)) {
-                            setBridesmaids(bridesmaids.filter(b => b.id !== showBridesmaidModal.id));
+                            const updatedList = bridesmaids.filter(b => b.id !== showBridesmaidModal.id);
+                            setBridesmaids(updatedList);
+                            localStorage.setItem('bridal_v7_bridesmaids', JSON.stringify(updatedList));
+                            syncHubToCloud({
+                              brideProfile,
+                              bridesmaids: updatedList,
+                              weddingDetails,
+                              dressReq,
+                              hotel,
+                              tasks,
+                              polls,
+                              messages,
+                              pinnedNote
+                            });
                             setShowBridesmaidModal(null);
+                            if (typeof showToast === 'function') showToast(`Removed ${showBridesmaidModal.name}`);
                           }
                         }}
-                        className="px-3.5 py-2.5 bg-rose-50 text-rose-600 hover:bg-rose-100 rounded-2xl border border-rose-200 text-xs font-semibold"
+                        className="px-3.5 py-2.5 bg-rose-50 text-rose-600 hover:bg-rose-100 rounded-2xl border border-rose-200 text-xs font-semibold cursor-pointer"
                       >
                         Delete
                       </button>

@@ -256,6 +256,37 @@ export default function App() {
       setDeferredPrompt(null);
     }
   };
+
+  // Toast Notification System
+  const [toastMessage, setToastMessage] = useState('');
+  const showToast = (msg) => {
+    setToastMessage(msg);
+    if (navigator.vibrate) navigator.vibrate(30);
+    setTimeout(() => setToastMessage(''), 2600);
+  };
+
+  // Live Wedding Countdown Timer (March 6, 2027 at 5:30 PM EST)
+  const [countdown, setCountdown] = useState({ days: 0, hours: 0, mins: 0, secs: 0 });
+
+  useEffect(() => {
+    const weddingDate = new Date('2027-03-06T17:30:00-05:00').getTime();
+    const updateCountdown = () => {
+      const now = new Date().getTime();
+      const distance = weddingDate - now;
+      if (distance > 0) {
+        setCountdown({
+          days: Math.floor(distance / (1000 * 60 * 60 * 24)),
+          hours: Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)),
+          mins: Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60)),
+          secs: Math.floor((distance % (1000 * 60)) / 1000)
+        });
+      }
+    };
+    updateCountdown();
+    const timer = setInterval(updateCountdown, 1000);
+    return () => clearInterval(timer);
+  }, []);
+
   useEffect(() => {
     localStorage.setItem('bridal_v7_bride', JSON.stringify(brideProfile));
   }, [brideProfile]);
@@ -510,6 +541,7 @@ export default function App() {
   const handleCopyCode = () => {
     navigator.clipboard.writeText(hotel.groupCode || '');
     setCopiedCode(true);
+    showToast(`✓ Hotel promo code ${hotel.groupCode} copied!`);
     setTimeout(() => setCopiedCode(false), 2200);
   };
 
@@ -673,13 +705,19 @@ export default function App() {
         <div className="absolute bottom-0 left-0 -ml-10 -mb-10 w-60 h-60 bg-celestial-100/70 rounded-full blur-3xl pointer-events-none"></div>
 
         {/* Top Ribbon */}
-        <div className="flex items-center justify-between mb-4 border-b border-powder-100/80 pb-3">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-4 border-b border-powder-100/80 pb-3 gap-2">
           <div className="flex items-center gap-2 text-powder-700">
             <span className="text-base">🎀</span>
             <span className="font-serif italic text-2xl sm:text-3xl text-powder-800 leading-none">Forever & Always</span>
           </div>
-          <div className="flex items-center gap-2">
-            <span className="text-xs sm:text-sm px-3.5 py-1 rounded-full bg-powder-100 border border-powder-200 text-powder-800 font-semibold shadow-2xs">
+          
+          {/* Live Countdown & Date Badges */}
+          <div className="flex items-center gap-2 flex-wrap">
+            <span className="text-xs sm:text-sm px-3.5 py-1 rounded-full bg-gradient-to-r from-powder-100 via-white to-powder-100 border border-powder-200 text-powder-900 font-bold shadow-2xs flex items-center gap-1.5 animate-pulse">
+              <span>⏳</span>
+              <span>{countdown.days}d {countdown.hours}h {countdown.mins}m {countdown.secs}s to "I Do!"</span>
+            </span>
+            <span className="text-xs sm:text-sm px-3 py-1 rounded-full bg-powder-100 border border-powder-200 text-powder-800 font-semibold shadow-2xs">
               💍 {weddingDetails.dateFormatted}
             </span>
           </div>
@@ -753,9 +791,20 @@ export default function App() {
               </div>
 
               <div className="p-3 bg-powder-50/80 rounded-2xl border border-powder-200">
-                <div className="font-semibold text-powder-950 flex items-center gap-1.5">
-                  <span>📍</span>
-                  <span>{weddingDetails.venueAddress}</span>
+                <div className="font-semibold text-powder-950 flex items-center justify-between">
+                  <div className="flex items-center gap-1.5">
+                    <span>📍</span>
+                    <span>{weddingDetails.venueAddress}</span>
+                  </div>
+                  <a
+                    href="https://www.google.com/maps/search/?api=1&query=2008+Middleground+Road,+Waynesboro,+GA+30830"
+                    target="_blank"
+                    rel="noreferrer"
+                    className="text-[10px] font-bold text-powder-700 hover:text-powder-950 bg-white px-2 py-0.5 rounded-lg border border-powder-200 shadow-2xs inline-flex items-center gap-0.5"
+                    title="Open GPS Directions in Google / Apple Maps"
+                  >
+                    <span>GPS ↗</span>
+                  </a>
                 </div>
                 <div className="text-powder-700 text-xs mt-0.5">
                   {weddingDetails.cityStateZip} (Reception to Follow)
@@ -767,37 +816,51 @@ export default function App() {
               "{weddingDetails.quote}"
             </p>
 
-            {/* Action Bar: View Invitation Card + Edit Wedding Info (Bride & Payton) + Swatch */}
+            {/* Action Bar: View Invitation Card + Add to Calendar + Edit Wedding Info + Swatches */}
             <div className="mt-4 pt-3.5 border-t border-powder-100 flex flex-wrap items-center justify-between gap-3">
               <div className="flex items-center gap-2 flex-wrap">
                 <button
                   onClick={() => setShowInvitationModal(true)}
                   className="px-4 py-2 bg-gradient-to-r from-powder-500 to-powder-600 hover:from-powder-600 hover:to-powder-700 text-white text-xs sm:text-sm font-semibold rounded-xl shadow-xs transition-all flex items-center gap-1.5"
                 >
-                  <span>📜 View Official Wedding Invitation</span>
+                  <span>📜 View Official Invitation</span>
                   <span>↗</span>
                 </button>
+
+                <a
+                  href="https://calendar.google.com/calendar/render?action=TEMPLATE&text=Wedding+of+Adrianna+%26+Thomas&dates=20270306T223000Z/20270307T030000Z&details=Whimsical+Wedding+Celebration+for+Adrianna+Eskew+and+Thomas+Albritton&location=2008+Middleground+Road,+Waynesboro,+GA+30830"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="px-3.5 py-2 bg-white hover:bg-powder-50 text-powder-800 text-xs sm:text-sm font-semibold rounded-xl border border-powder-300 shadow-xs transition-all flex items-center gap-1.5"
+                >
+                  <span>📅 Add to Calendar</span>
+                </a>
 
                 {isAdmin && (
                   <button
                     onClick={() => setShowEditWeddingModal(true)}
                     className="px-3.5 py-2 bg-white hover:bg-powder-50 text-powder-800 text-xs sm:text-sm font-semibold rounded-xl border border-powder-300 shadow-xs transition-all flex items-center gap-1.5"
                   >
-                    <span>✏️ Edit Wedding Info</span>
+                    <span>✏️ Edit Info</span>
                   </button>
                 )}
               </div>
 
               <div className="flex items-center gap-2">
                 <span className="text-xs font-semibold text-powder-800">Mumu Steel Blue Palette:</span>
-                <div className="flex -space-x-1.5">
+                <div className="flex -space-x-1">
                   {dressReq.hexCodes.map((hex, i) => (
-                    <span 
+                    <button 
                       key={i} 
-                      className="w-5 h-5 rounded-full border-2 border-white shadow-2xs" 
+                      type="button"
+                      onClick={() => {
+                        navigator.clipboard?.writeText(hex);
+                        showToast(`✓ Color swatch ${hex} copied to clipboard!`);
+                      }}
+                      className="w-6 h-6 rounded-full border-2 border-white shadow-2xs hover:scale-125 transition-transform cursor-pointer" 
                       style={{ backgroundColor: hex }}
-                      title={hex}
-                    ></span>
+                      title={`Click to copy hex ${hex}`}
+                    />
                   ))}
                 </div>
               </div>
@@ -1509,21 +1572,45 @@ export default function App() {
             <div ref={chatEndRef}></div>
           </div>
 
-          <form onSubmit={handleSendMessage} className="flex gap-3">
-            <input
-              type="text"
-              placeholder={currentUser ? `Message as ${currentUser.name}...` : "Select profile to chat..."}
-              value={chatInput}
-              onChange={(e) => setChatInput(e.target.value)}
-              className="flex-1 text-xs sm:text-sm px-4 py-3 rounded-2xl border border-powder-200 bg-white focus:outline-none focus:ring-2 focus:ring-powder-400"
-            />
-            <button
-              type="submit"
-              className="px-6 py-3 bg-gradient-to-r from-powder-500 to-powder-600 hover:from-powder-600 hover:to-powder-700 text-white text-xs sm:text-sm font-semibold rounded-2xl shadow-sm transition-all"
-            >
-              Send
-            </button>
-          </form>
+          {/* Quick Emoji Toolbar & Chat Input */}
+          <div className="space-y-2">
+            <div className="flex items-center gap-1 px-1 overflow-x-auto py-1">
+              <span className="text-[10px] uppercase font-bold text-powder-500 mr-1 flex-shrink-0">Quick Emojis:</span>
+              {['💕', '🥂', '👗', '💍', '🎉', '👰', '✨', '🩵', '🍰', '💐', '🌲', '🎀'].map(emoji => (
+                <button
+                  key={emoji}
+                  type="button"
+                  onClick={() => setChatInput(prev => prev + emoji)}
+                  className="px-1.5 py-0.5 hover:bg-powder-100 rounded-lg text-sm transition-transform hover:scale-125"
+                  title={`Insert ${emoji}`}
+                >
+                  {emoji}
+                </button>
+              ))}
+            </div>
+
+            <form onSubmit={handleSendMessage} className="flex gap-2 sm:gap-3">
+              <input
+                type="text"
+                placeholder={currentUser ? `Message as ${currentUser.name}... (Press Enter to send)` : "Select profile to chat..."}
+                value={chatInput}
+                onChange={(e) => setChatInput(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    handleSendMessage(e);
+                  }
+                }}
+                className="flex-1 text-xs sm:text-sm px-4 py-3 rounded-2xl border border-powder-200 bg-white focus:outline-none focus:ring-2 focus:ring-powder-400"
+              />
+              <button
+                type="submit"
+                className="px-5 sm:px-6 py-3 bg-gradient-to-r from-powder-500 to-powder-600 hover:from-powder-600 hover:to-powder-700 text-white text-xs sm:text-sm font-semibold rounded-2xl shadow-sm transition-all flex-shrink-0"
+              >
+                Send 💌
+              </button>
+            </form>
+          </div>
         </div>
       )}
 
@@ -2778,6 +2865,14 @@ export default function App() {
               </div>
             </form>
           </div>
+        </div>
+      )}
+
+      {/* Floating Gentle Toast Notification */}
+      {toastMessage && (
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 bg-powder-900/95 backdrop-blur-md text-white text-xs sm:text-sm font-semibold px-4 py-2.5 rounded-2xl shadow-xl border border-powder-700/60 flex items-center gap-2 pointer-events-none transition-all">
+          <span className="text-base">✨</span>
+          <span>{toastMessage}</span>
         </div>
       )}
 

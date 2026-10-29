@@ -1,0 +1,23 @@
+{
+  "name": "Adrianna & Thomas — Wedding & Bridal Party Hub",
+  "short_name": "Adrianna & Thomas",
+  "description": "Whimsical Powder Blue Bridal Party Hub for Adrianna & Thomas's Wedding",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#f4f8fc",
+  "theme_color": "#3978af",
+  "icons": [
+    {
+      "src": "./icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "./icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
